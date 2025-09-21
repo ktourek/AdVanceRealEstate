@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Available Listings</h1>
+  {% if listings %}
+    <div class="grid">
+      {% for item in listings %}
+        <article class="card">
+          <h2>{{ item.title }}</h2>
+          <p class="price">${{ item.price }}</p>
+          <p class="muted">{{ item.address }}</p>
+          <p>{{ item.description|truncatechars:180 }}</p>
+          <p class="muted">Listed: {{ item.listed_date|date:"M d, Y, g:i a" }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No listings published yet.</p>
+  {% endif %}
+{% endblock %}
