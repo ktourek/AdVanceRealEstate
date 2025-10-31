@@ -1,51 +1,21 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Welcome to AdVance Real Estate</title>
-    <style>
-        body {
-            font-family: system-ui, Arial, sans-serif; margin: 0; background: #f8f9fb;
-        }
 
-        header {
-            background: #0f172a; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
-        }
+    <!-- Global font + stylesheet -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+    <link href="{% static 'css/site.css' %}" rel="stylesheet">
 
-            header a {
-                color: #fff; text-decoration: none; margin-left: 16px;
-            }
-
-                header a:hover {
-                    text-decoration: underline;
-                }
-
-        .container {
-            max-width: 1000px; margin: 24px auto; padding: 0 16px;
-        }
-
-        .grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
-        }
-
-        .card {
-            background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
-        }
-
-        .price {
-            font-weight: 700;
-        }
-
-        .muted {
-            color: #6b7280; font-size: 0.9rem;
-        }
-    </style>
     {% block head %}{% endblock %}
 </head>
 <body>
     <header>
-        <strong>AdVance Real Estate</strong>
+        <strong class="brand">AdVance Real Estate</strong>
         <nav>
             {% if user.is_authenticated %}
             <span>Welcome, {{ user.username }}!</span>

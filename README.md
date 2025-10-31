@@ -98,6 +98,7 @@ Open your browser at 👉 http://127.0.0.1:8000/
 
 ## 👥 Team
 - **Arunjith Gopinathan** – Initial setup, project foundation  
+- **Konner Tourek** - Developer of things in this site
 - (Add other team members as they contribute)
 
 ---
