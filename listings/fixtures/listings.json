@@ -1,0 +1,62 @@
+[
+  {
+    "model": "listings.listing",
+    "pk": 1,
+    "fields": {
+      "title": "Luxury Downtown Condo",
+      "price": "475000.00",
+      "description": "Modern 2-bedroom, 2-bath condo in the heart of downtown. Features skyline views, floor-to-ceiling windows, fitness center, and private parking.",
+      "address": "210 S 18th St, Omaha, NE 68102",
+      "listed_date": "2025-09-20T12:00:00Z",
+      "is_published": true
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 2,
+    "fields": {
+      "title": "Charming Starter Home",
+      "price": "185000.00",
+      "description": "Cozy 2-bedroom, 1-bath bungalow with updated kitchen, hardwood floors, and large backyard. Perfect for first-time buyers.",
+      "address": "514 Walnut Ave, Bellevue, NE 68005",
+      "listed_date": "2025-09-20T12:05:00Z",
+      "is_published": true
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 3,
+    "fields": {
+      "title": "Spacious Family Home with Pool",
+      "price": "389000.00",
+      "description": "Beautiful 4-bedroom, 3-bath home with open concept living area, finished basement, 2-car garage, and outdoor pool with deck.",
+      "address": "12809 Pinehurst Circle, Papillion, NE 68046",
+      "listed_date": "2025-09-20T12:10:00Z",
+      "is_published": true
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 4,
+    "fields": {
+      "title": "Modern Loft Apartment",
+      "price": "255000.00",
+      "description": "Industrial-style loft with exposed brick, high ceilings, stainless steel appliances, and rooftop access. Great investment property.",
+      "address": "601 N 13th St, Unit 4B, Omaha, NE 68102",
+      "listed_date": "2025-09-20T12:15:00Z",
+      "is_published": true
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 5,
+    "fields": {
+      "title": "Country Retreat on 5 Acres",
+      "price": "540000.00",
+      "description": "Gorgeous 5-bedroom farmhouse with wraparound porch, barn, and pond. Perfect blend of rustic charm and modern amenities.",
+      "address": "8923 County Rd 12, Elkhorn, NE 68022",
+      "listed_date": "2025-09-20T12:20:00Z",
+      "is_published": true
+    }
+  }
+]
