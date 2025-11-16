@@ -1,0 +1,59 @@
+[
+  {
+    "model": "listings.pricebucket",
+    "pk": 1,
+    "fields": {
+      "range": "$0 - $100,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 2,
+    "fields": {
+      "range": "$100,000 - $200,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 3,
+    "fields": {
+      "range": "$200,000 - $300,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 4,
+    "fields": {
+      "range": "$300,000 - $400,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 5,
+    "fields": {
+      "range": "$400,000 - $500,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 6,
+    "fields": {
+      "range": "$500,000 - $750,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 7,
+    "fields": {
+      "range": "$750,000 - $1,000,000"
+    }
+  },
+  {
+    "model": "listings.pricebucket",
+    "pk": 8,
+    "fields": {
+      "range": "$1,000,000+"
+    }
+  }
+]
+

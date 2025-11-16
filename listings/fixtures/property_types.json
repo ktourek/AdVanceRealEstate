@@ -1,0 +1,59 @@
+[
+  {
+    "model": "listings.propertytype",
+    "pk": 1,
+    "fields": {
+      "name": "House"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 2,
+    "fields": {
+      "name": "Apartment"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 3,
+    "fields": {
+      "name": "Condo"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 4,
+    "fields": {
+      "name": "Townhouse"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 5,
+    "fields": {
+      "name": "Duplex"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 6,
+    "fields": {
+      "name": "Mobile Home"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 7,
+    "fields": {
+      "name": "Land"
+    }
+  },
+  {
+    "model": "listings.propertytype",
+    "pk": 8,
+    "fields": {
+      "name": "Commercial"
+    }
+  }
+]
+
