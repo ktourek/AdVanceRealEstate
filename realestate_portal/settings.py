@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-_n($*!)s7fptc4jmqg^#u_j1%n#bo0a9ec8698onfb7vfo3&6#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','.pythonanywhere.com']
 
 
 # Application definition
@@ -40,17 +40,15 @@ INSTALLED_APPS = [
     'listings.apps.ListingsConfig',
 ]
 
-# Add credentials you want to allow (edit directly in code).
-# NOTE: passwords are stored in plain text here because you requested
-# manual in-code management. For production, use a secure approach.
+
 ALLOWED_CREDENTIALS = [
     {'username': 'ktourek', 'password': 'ktourek123!'},
     {'username': 'tbrzezowsky', 'password': 'tbrzezowsky123!x'},
     {'username': 'vjacintoflores', 'password': 'vjacintoflores123!'},
     {'username': 'agopinathan', 'password': 'agopinathan123!'},
+    {'username': 'pvanvliet', 'password': 'pvanvliet123!'},
 ]
 
-# Use the custom settings-based backend first, fall back to the DB backend.
 AUTHENTICATION_BACKENDS = [
     'realestate_portal.auth_backends.SettingsBackend',
     'django.contrib.auth.backends.ModelBackend',
@@ -58,7 +56,7 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
