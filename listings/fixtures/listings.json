@@ -3,60 +3,105 @@
     "model": "listings.listing",
     "pk": 1,
     "fields": {
-      "title": "Luxury Downtown Condo",
+      "address": "210 S 18th St, Omaha, NE 68102",
       "price": "475000.00",
       "description": "Modern 2-bedroom, 2-bath condo in the heart of downtown. Features skyline views, floor-to-ceiling windows, fitness center, and private parking.",
-      "address": "210 S 18th St, Omaha, NE 68102",
       "listed_date": "2025-09-20T12:00:00Z",
-      "is_published": true
+      "is_visible": true,
+      "is_featured": false,
+      "created_by": 1,
+      "property_type": 3,
+      "neighborhood": 1,
+      "pricebucket": 5,
+      "bedrooms": 2,
+      "bathrooms": "2.0",
+      "square_footage": 1200,
+      "status": "Available",
+      "status_id": 1
     }
   },
   {
     "model": "listings.listing",
     "pk": 2,
     "fields": {
-      "title": "Charming Starter Home",
+      "address": "514 Walnut Ave, Bellevue, NE 68005",
       "price": "185000.00",
       "description": "Cozy 2-bedroom, 1-bath bungalow with updated kitchen, hardwood floors, and large backyard. Perfect for first-time buyers.",
-      "address": "514 Walnut Ave, Bellevue, NE 68005",
       "listed_date": "2025-09-20T12:05:00Z",
-      "is_published": true
+      "is_visible": true,
+      "is_featured": false,
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 7,
+      "pricebucket": 2,
+      "bedrooms": 2,
+      "bathrooms": "1.0",
+      "square_footage": 950,
+      "status": "Available",
+      "status_id": 1
     }
   },
   {
     "model": "listings.listing",
     "pk": 3,
     "fields": {
-      "title": "Spacious Family Home with Pool",
+      "address": "12809 Pinehurst Circle, Papillion, NE 68046",
       "price": "389000.00",
       "description": "Beautiful 4-bedroom, 3-bath home with open concept living area, finished basement, 2-car garage, and outdoor pool with deck.",
-      "address": "12809 Pinehurst Circle, Papillion, NE 68046",
       "listed_date": "2025-09-20T12:10:00Z",
-      "is_published": true
+      "is_visible": true,
+      "is_featured": true,
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 8,
+      "pricebucket": 4,
+      "bedrooms": 4,
+      "bathrooms": "3.0",
+      "square_footage": 2400,
+      "status": "Available",
+      "status_id": 1
     }
   },
   {
     "model": "listings.listing",
     "pk": 4,
     "fields": {
-      "title": "Modern Loft Apartment",
+      "address": "601 N 13th St, Unit 4B, Omaha, NE 68102",
       "price": "255000.00",
       "description": "Industrial-style loft with exposed brick, high ceilings, stainless steel appliances, and rooftop access. Great investment property.",
-      "address": "601 N 13th St, Unit 4B, Omaha, NE 68102",
       "listed_date": "2025-09-20T12:15:00Z",
-      "is_published": true
+      "is_visible": true,
+      "is_featured": false,
+      "created_by": 1,
+      "property_type": 2,
+      "neighborhood": 1,
+      "pricebucket": 3,
+      "bedrooms": 1,
+      "bathrooms": "1.5",
+      "square_footage": 850,
+      "status": "Available",
+      "status_id": 1
     }
   },
   {
     "model": "listings.listing",
     "pk": 5,
     "fields": {
-      "title": "Country Retreat on 5 Acres",
+      "address": "8923 County Rd 12, Elkhorn, NE 68022",
       "price": "540000.00",
       "description": "Gorgeous 5-bedroom farmhouse with wraparound porch, barn, and pond. Perfect blend of rustic charm and modern amenities.",
-      "address": "8923 County Rd 12, Elkhorn, NE 68022",
       "listed_date": "2025-09-20T12:20:00Z",
-      "is_published": true
+      "is_visible": true,
+      "is_featured": true,
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 9,
+      "pricebucket": 6,
+      "bedrooms": 5,
+      "bathrooms": "3.5",
+      "square_footage": 3200,
+      "status": "Available",
+      "status_id": 1
     }
   }
 ]

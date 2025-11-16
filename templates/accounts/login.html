@@ -12,7 +12,7 @@
                     {{ form.non_field_errors }}
 
                     <div class="form-row">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Email</label>
                         <div class="input-with-icon">
                             <span class="icon user-icon" aria-hidden="true"></span>
                             {{ form.username }}
@@ -31,6 +31,9 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn login-button">Login</button>
+                    </div>
+                    <div class="form-footer" style="margin-top: 1rem; text-align: center;">
+                        <p>Need an account? Contact your administrator.</p>
                     </div>
                 </form>
             </div>
