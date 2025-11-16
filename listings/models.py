@@ -134,25 +134,19 @@ class Listing(models.Model):
         User,
         on_delete=models.CASCADE,
         db_column='Created_by',
-        related_name='listings',
-        null=True,  # Temporarily nullable for migration, will be made non-null later
-        blank=True
+        related_name='listings'
     )
     property_type = models.ForeignKey(
         PropertyType,
         on_delete=models.CASCADE,
         db_column='Property_Type_ID',
-        related_name='listings',
-        null=True,  # Temporarily nullable for migration
-        blank=True
+        related_name='listings'
     )
     neighborhood = models.ForeignKey(
         Neighborhood,
         on_delete=models.CASCADE,
         db_column='Neighborhood_ID',
-        related_name='listings',
-        null=True,  # Temporarily nullable for migration
-        blank=True
+        related_name='listings'
     )
     pricebucket = models.ForeignKey(
         Pricebucket,
@@ -225,7 +219,7 @@ class Photo(models.Model):
     photo_display_order = models.IntegerField(
         null=True,
         blank=True,
-        db_column='Phot_Display_Order'
+        db_column='Photo_Display_Order'
     )
     
     class Meta:
