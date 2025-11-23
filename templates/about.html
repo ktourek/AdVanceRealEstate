@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="about-page">
+    <div class="container">
+        <div class="about-grid">
+            <!-- Left container with photo -->
+            <div class="about-left">
+                <div class="about-photo">
+                    <img src="{% static 'img/madison_vance.png' %}" alt="Madison Vance">
+                </div>
+
+                <h2 class="about-heading">Who am I?</h2>
+
+                <div class="about-text">
+                    <p>I'm Madison Vance, the owner and broker of AdVance Home Real Estate right here in Omaha. I've always loved helping people find that special place to call home. After earning my Business Administration degree, I got my start as a real estate agent with a great local brokerage. Before long, I realized I wanted to build something of my own.</p>
+
+                    <p>That's how AdVance Home Real Estate began. It's a small, client-focused business where I can give every buyer and seller my full attention. I handle everything personally, from marketing listings to scheduling showings, and my wonderful assistant Janet helps keep things running smoothly behind the scenes.</p>
+
+                    <p>My goal is simple: to make the real estate process as easy and enjoyable as possible. I'm here to answer questions, offer honest advice, and help you find a home that fits your life perfectly.</p>
+
+                    <p>When I'm not working with clients, I love exploring Omaha's neighborhoods, discovering new restaurants, and spending time with family and friends.</p>
+                </div>
+            </div>
+
+            <!-- Right container with contact fields -->
+            <!-- TODO set up email functionality when it is decided -->
+            <div class="about-right">
+                <h2 class="contact-heading">Let's chat!</h2>
+                <p class="contact-sub">Have any questions or want more information?<br>Send me a message below, I'm happy to talk!</p>
+
+                <form class="contact-form" method="post" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <input type="text" name="name" placeholder="Your name" required>
+                    <input type="email" name="email" placeholder="Your email address" required>
+                    <textarea name="message" rows="5" placeholder="Your message..." required></textarea>
+                    <button type="submit" class="send-btn">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

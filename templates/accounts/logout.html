@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Left side container-->
+        <div class="login-left">
+            <h1>Logout complete.</h1>
+            <p class="logout-subtitle">Your admin session has ended securely.</p>
+
+            <p class="logout-link">
+                Didn't mean to logout?
+                <a href="{% url 'login' %}">Log back in here.</a>
+            </p>
+        </div>
+
+        <!-- Right side container -->
+        <div class="login-right">
+            <img src="{% static 'img/Green_on_white_logo.png' %}" alt="AdVance Home Real Estate" class="login-logo">
+        </div>
+    </div>
+</div>
+{% endblock %}

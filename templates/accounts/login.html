@@ -1,49 +1,30 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="login-page">
+<div class="login-wrapper">
     <div class="login-container">
+        <!-- Left Side Container -->
         <div class="login-left">
-            <div class="login-form-card">
-                <div class="message">Welcome to AdVance Real Estate</div>
+            <h1>Welcome to AdVance Real Estate!</h1>
+            <p class="restricted">Restricted Access: This portal is for the site owner only.</p>
 
-                <form method="post" action="{% url 'login' %}" class="login-form">
-                    {% csrf_token %}
-                    {{ form.non_field_errors }}
-
-                    <div class="form-row">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        <div class="input-with-icon">
-                            <span class="icon user-icon" aria-hidden="true"></span>
-                            {{ form.username }}
-                        </div>
-                        {{ form.username.errors }}
-                    </div>
-
-                    <div class="form-row">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        <div class="input-with-icon">
-                            <span class="icon key-icon" aria-hidden="true"></span>
-                            {{ form.password }}
-                        </div>
-                        {{ form.password.errors }}
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn login-button">Login</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <aside class="login-right">
-            <div class="verticle-separator">
-                <div class="promo-card">
-                    <div class="logo-text">[Logo]</div>
-                    <p class="promo-copy">Find your next home with AdVance Real Estate.</p>
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="E-mail" required class="login-input">
                 </div>
-            </div>
-        </aside>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required class="login-input">
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <p class="need-account">Need an account? Contact your administrator.</p>
+            </form>
+        </div>
+        <!-- Right Side Container -->
+        <div class="login-right">
+            <img src="{% static 'img/Green_on_white_logo.png' %}" alt="AdVance Home Real Estate" class="login-logo">
+        </div>
     </div>
 </div>
 {% endblock %}
