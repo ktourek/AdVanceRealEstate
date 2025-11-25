@@ -6,7 +6,9 @@ from .forms import CustomLoginForm
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('home/', views.home, name='home_alias'),  # allow /home/ as well
+    path('home/', views.home, name='home_alias'),
+    path('listings/', views.all_listings, name='listings'),
+    path('add-listing/', views.add_listing, name='add_listing'),
     path(
         'login/',
         auth_views.LoginView.as_view(
@@ -15,6 +17,6 @@ urlpatterns = [
         ),
         name='login'
     ),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', views.custom_logout, name='logout'),
     # User registration removed - users are managed by admin in Django admin interface
 ]

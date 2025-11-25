@@ -1,60 +1,206 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - AdVance Real Estate</title>
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<div class="login-wrapper">
-    <div class="login-container">
-        <!-- Left Side Container -->
+        body {
+            font-family: 'Lato', sans-serif;
+            background: #869a77;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            display: flex;
+            background: #869a77;
+        }
+
+        .login-left {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 20px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group input {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px 20px;
+            border-radius: 25px;
+            border: none;
+            background: white;
+            color: #333;
+            font-size: 16px;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .login-button {
+            width: fit-content;
+            padding: 12px 40px;
+            border-radius: 25px;
+            border: none;
+            background: #f5f5f5;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .login-button:hover {
+            background: #e0e0e0;
+        }
+
+        .login-footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #000;
+            font-style: italic;
+        }
+
+        .login-divider {
+            width: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            margin: 100px 20px 100px 40px;
+            align-self: stretch;
+        }
+
+        .login-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+        }
+
+        .login-logo {
+            max-width: 650px;
+            width: 100%;
+        }
+
+        .errorlist {
+            list-style: none;
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 968px) {
+            .login-wrapper {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .login-divider {
+                width: 100%;
+                height: 3px;
+                margin: 40px 0;
+            }
+
+            .login-left, .login-right {
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
         <div class="login-left">
-            <h1>Welcome to AdVance Real Estate!</h1>
-            <p class="restricted">Restricted Access: This portal is for the site owner only.</p>
+            <h1 class="login-title">Welcome to AdVance Real Estate!</h1>
+            <p class="login-subtitle">Restricted Access: This portal is for the site owner only.</p>
+            
+            <form method="post" action="{% url 'login' %}" class="login-form">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
 
-                <form method="post" action="{% url 'login' %}" class="login-form">
-                    {% csrf_token %}
-                    {{ form.non_field_errors }}
-
-                    <div class="form-row">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Email</label>
-                        <div class="input-with-icon">
-                            <span class="icon user-icon" aria-hidden="true"></span>
-                            {{ form.username }}
-                        </div>
-                        {{ form.username.errors }}
-                    </div>
-
-                    <div class="form-row">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        <div class="input-with-icon">
-                            <span class="icon key-icon" aria-hidden="true"></span>
-                            {{ form.password }}
-                        </div>
-                        {{ form.password.errors }}
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn login-button">Login</button>
-                    </div>
-                    <div class="form-footer" style="margin-top: 1rem; text-align: center;">
-                        <p>Need an account? Contact your administrator.</p>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <aside class="login-right">
-            <div class="verticle-separator">
-                <div class="promo-card">
-                    <div class="logo-text">[Logo]</div>
-                    <p class="promo-copy">Find your next home with AdVance Real Estate.</p>
+                <div class="form-group">
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
-                <button type="submit" class="login-btn">Login</button>
-                <p class="need-account">Need an account? Contact your administrator.</p>
+
+                <div class="form-group">
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.password.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="login-button">Login</button>
+                
+                <p class="login-footer">Need an account? Contact your administrator.</p>
             </form>
         </div>
-        <!-- Right Side Container -->
+
+        <div class="login-divider"></div>
+
         <div class="login-right">
-            <img src="{% static 'img/Green_on_white_logo.png' %}" alt="AdVance Home Real Estate" class="login-logo">
+            <img src="{% static 'images/logo.png' %}" alt="AdVance Real Estate Logo" class="login-logo">
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

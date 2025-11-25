@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin-top: 40px;">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 10px;">Add New Property Listing</h1>
+        <p style="color: #666; max-width: 600px; margin: 0 auto;">
+            As Madison, you can add new properties to your real estate website. Fill in the property details, upload photos, and mark the listing status.
+        </p>
+    </div>
+
+    <div class="card" style="padding: 40px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger" style="color: #dc2626; background: #fee2e2; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                <strong>Please correct the errors below:</strong>
+                {{ form.non_field_errors }}
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Property Information</h2>
+
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <!-- Row 1 -->
+                <div class="form-group">
+                    <label for="{{ form.address.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Address</label>
+                    {{ form.address }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.price.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Price</label>
+                    {{ form.price }}
+                </div>
+
+                <!-- Row 2 -->
+                <div class="form-group">
+                    <label for="{{ form.property_type.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Home Type</label>
+                    {{ form.property_type }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.neighborhood.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Neighborhood</label>
+                    {{ form.neighborhood }}
+                </div>
+
+                <!-- Row 3 -->
+                <div class="form-group">
+                    <label for="{{ form.bedrooms.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Bedroom(s)</label>
+                    {{ form.bedrooms }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.bathrooms.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Bathroom(s)</label>
+                    {{ form.bathrooms }}
+                </div>
+
+                <!-- Row 4 -->
+                <div class="form-group">
+                    <label for="{{ form.square_footage.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Home's Square Footage</label>
+                    {{ form.square_footage }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Listing Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group" style="margin-top: 30px;">
+                <label for="{{ form.description.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Description</label>
+                {{ form.description }}
+            </div>
+
+            <!-- Photos -->
+            <div class="form-group" style="margin-top: 30px;">
+                <label for="{{ form.photos.id_for_label }}" style="display: block; font-weight: 700; margin-bottom: 8px;">Upload Property Photos</label>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9fafb;">
+                    {{ form.photos }}
+                    <small style="display: block; margin-top: 5px; color: #666;">Please upload exactly 4 images.</small>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions" style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px;">
+                <a href="{% url 'home' %}" class="btn" style="background: #fff; border: 1px solid #ccc; color: #333;">Cancel</a>
+                <button type="submit" class="btn" style="background: #869A77; color: #fff;">Add Listing</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Local overrides for form styling to match the specific design */
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #111827;
+        background: #fff;
+    }
+    
+    .form-control:focus {
+        border-color: #869A77;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(134, 154, 119, 0.1);
+    }
+    
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+</style>
+{% endblock %}
