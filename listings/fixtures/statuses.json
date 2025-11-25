@@ -1,0 +1,24 @@
+[
+  {
+    "model": "listings.status",
+    "pk": 1,
+    "fields": {
+      "name": "Active"
+    }
+  },
+  {
+    "model": "listings.status",
+    "pk": 2,
+    "fields": {
+      "name": "Pending"
+    }
+  },
+  {
+    "model": "listings.status",
+    "pk": 3,
+    "fields": {
+      "name": "Sold"
+    }
+  }
+]
+

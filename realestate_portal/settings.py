@@ -41,23 +41,19 @@ INSTALLED_APPS = [
     'listings.apps.ListingsConfig',
 ]
 
+# Custom User Model
+AUTH_USER_MODEL = 'listings.User'
 
-ALLOWED_CREDENTIALS = [
-    {'username': 'ktourek', 'password': 'ktourek123!'},
-    {'username': 'tbrzezowsky', 'password': 'tbrzezowsky123!x'},
-    {'username': 'vjacintoflores', 'password': 'vjacintoflores123!'},
-    {'username': 'agopinathan', 'password': 'agopinathan123!'},
-    {'username': 'pvanvliet', 'password': 'pvanvliet123!'},
-]
+# Remove ALLOWED_CREDENTIALS - now using database authentication
+# ALLOWED_CREDENTIALS removed - using database-based authentication
 
 AUTHENTICATION_BACKENDS = [
-    'realestate_portal.auth_backends.SettingsBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'login'  # Redirect to login page after logout
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
