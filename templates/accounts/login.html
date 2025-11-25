@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="login-page">
+<div class="login-wrapper">
     <div class="login-container">
+        <!-- Left Side Container -->
         <div class="login-left">
-            <div class="login-form-card">
-                <div class="message">Welcome to AdVance Real Estate</div>
+            <h1>Welcome to AdVance Real Estate!</h1>
+            <p class="restricted">Restricted Access: This portal is for the site owner only.</p>
 
                 <form method="post" action="{% url 'login' %}" class="login-form">
                     {% csrf_token %}
@@ -45,8 +47,14 @@
                     <div class="logo-text">[Logo]</div>
                     <p class="promo-copy">Find your next home with AdVance Real Estate.</p>
                 </div>
-            </div>
-        </aside>
+                <button type="submit" class="login-btn">Login</button>
+                <p class="need-account">Need an account? Contact your administrator.</p>
+            </form>
+        </div>
+        <!-- Right Side Container -->
+        <div class="login-right">
+            <img src="{% static 'img/Green_on_white_logo.png' %}" alt="AdVance Home Real Estate" class="login-logo">
+        </div>
     </div>
 </div>
 {% endblock %}

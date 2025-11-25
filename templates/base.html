@@ -4,32 +4,54 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to AdVance Real Estate</title>
-
-
+    <title>AdVance Home Real Estate | Omaha, NE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="{% static 'css/site.css' %}" rel="stylesheet">
-
     {% block head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <strong class="brand">AdVance Real Estate</strong>
-        <nav>
-            {% if user.is_authenticated %}
-            <span>Welcome, {{ user.get_full_name|default:user.email }}!</span>
-            <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" style="background: none; border: none; color: inherit; text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0;">Logout</button>
-            </form>
-            {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            {% endif %}
-        </nav>
+    <header class="site-header">
+        <div class="container">
+
+            <!-- Logo centered at top -->
+            <div class="header-logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'img/Navigational_Image.png' %}" alt="AdVance Home Real Estate">
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="main-nav-full">
+                <a href="{% url 'home' %}" class="active">Home</a>
+                <a href="{% url 'about' %}">About</a>
+                <a href="#">Listings</a>
+                <a href="#">Omaha</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="contact-btn-image" aria-label="Logout">
+                    <img src="{% static 'img/logout_image.png' %}" alt="Logout">
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="contact-btn-image">
+                    <img src="{% static 'img/login_image.png' %}" alt="Login">
+                </a>
+                {% endif %}
+            </nav>
+        </div>
     </header>
-    <main class="container">
+
+    <main>
         {% block content %}{% endblock %}
     </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container">
+            <p class="footer-text">
+                Omaha, NE  |  (402) 123-1234  |  info@advancehome.com
+            </p>
+        </div>
+    </footer>
 </body>
 </html>

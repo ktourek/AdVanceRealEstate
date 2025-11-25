@@ -1,0 +1,47 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero / Featured Listing Section -->
+<section class="hero-featured">
+    <div class="container">
+        <div class="featured-grid">
+            <!-- Left: Featured Image -->
+            <div class="featured-image">
+                <img src="{% static 'img/featured-home.jpg' %}" alt="6317 N 68th St - Featured Home">
+            </div>
+
+            <!-- Right: Featured Text -->
+            <div class="featured-content">
+                <h3 class="featured-subtitle">Featured Home of the Week!</h3>
+                <h2 class="featured-address">6317 N 68th St, Omaha, NE 68104</h2>
+                <p class="featured-description">
+                    Don't miss the opportunity for an affordable home! Enjoy a spacious living area,
+                    an updated kitchen, and a large backyard perfect for entertaining or relaxing!
+                </p>
+                <a href="#" class="featured-link">View full listing →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Welcome / Main Content Section -->
+<section class="welcome-section">
+    <div class="container">
+        <h1>Welcome to AdVance Home Real Estate!</h1>
+        <h3><em>Local expertise you can trust.</em></h3>
+        <p>
+            At AdVance Home Real Estate, we help you move forward with confidence. Whether you're
+            searching for a place to call home or simply exploring the Omaha real estate market,
+            Madison Vance is here to guide you every step of the way. With years of experience and
+            a deep understanding of Omaha's neighborhoods, Madison is dedicated to helping you
+            find the home that's right for you.
+        </p>
+        <div class="welcome-logo">
+            <img src="{% static 'img/Green_on_white_logo.png' %}" alt="AdVance Home Real Estate">
+        </div>
+    </div>
+</section>
+
+{% endblock %}
