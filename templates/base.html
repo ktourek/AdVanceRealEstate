@@ -14,7 +14,6 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    {% if user.is_authenticated %}
     <header>
         <div class="header-logo-row">
             <div class="logo-container">
@@ -26,28 +25,30 @@
         <div class="header-nav-row">
             <nav>
                 <a href="{% url 'home' %}">Home</a>
-                <a href="#">About</a>
+                <a href="{% url 'about' %}">About</a>
                 <a href="{% url 'listings' %}">Listings</a>
-                <a href="#">Omaha</a>
+                <a href="{% url 'omaha' %}">Omaha</a>
             </nav>
             <div class="user-actions">
-                <span class="user-greeting" style="color: white; margin-right: 10px; font-weight: 500;">Hello, {{ user.get_full_name|default:user.email }}</span>
-                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
-                    {% csrf_token %}
-                </form>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+                {% if user.is_authenticated %}
+                    <span class="user-greeting" style="color: white; margin-right: 10px; font-weight: 500;">Hello, {{ user.get_full_name|default:user.email }}</span>
+                    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="login-link" style="color: white; text-decoration: none; font-weight: 500;">Login</a>
+                {% endif %}
             </div>
         </div>
     </header>
-    {% endif %}
     
     <main>
         {% block content %}{% endblock %}
     </main>
     
-    {% if user.is_authenticated %}
     <footer>
         <div class="footer-content">
             <div class="contact-item">
@@ -66,6 +67,5 @@
             </div>
         </div>
     </footer>
-    {% endif %}
 </body>
 </html>

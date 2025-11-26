@@ -8,11 +8,10 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from decimal import Decimal
 import re
-from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog
-from .forms import ListingForm
+from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog, OmahaLocation
+from .forms import ListingForm, OmahaLocationForm
 
 
-@login_required
 def home(request):
     """Public homepage showing featured listing and welcome message."""
     # Get the featured listing
@@ -302,3 +301,89 @@ def listing_photo(request, photo_id):
         response['Cache-Control'] = 'public, max-age=31536000'  # Cache for 1 year
         return response
     return HttpResponse(status=404)
+
+
+def omaha(request):
+    """Public page showing information about Omaha and its neighborhoods."""
+    # Fetch published locations grouped by category
+    see_do_locations = OmahaLocation.objects.filter(is_published=True, category='See & Do').order_by('display_order', 'name')
+    food_locations = OmahaLocation.objects.filter(is_published=True, category='Food').order_by('display_order', 'name')
+    event_locations = OmahaLocation.objects.filter(is_published=True, category='Events').order_by('display_order', 'name')
+    
+    context = {
+        'see_do_locations': see_do_locations,
+        'food_locations': food_locations,
+        'event_locations': event_locations,
+    }
+    return render(request, 'omaha.html', context)
+
+
+@login_required
+def manage_omaha(request):
+    """View for managing Omaha locations."""
+    category_filter = request.GET.get('category')
+    
+    locations = OmahaLocation.objects.all().order_by('category', 'display_order', 'name')
+    
+    if category_filter:
+        locations = locations.filter(category=category_filter)
+        
+    context = {
+        'locations': locations,
+        'current_category': category_filter,
+        'categories': ['See & Do', 'Food', 'Events']
+    }
+    return render(request, 'listings/omaha_manage.html', context)
+
+
+@login_required
+def add_omaha_location(request):
+    """View to add a new Omaha location."""
+    if request.method == 'POST':
+        form = OmahaLocationForm(request.POST)
+        if form.is_valid():
+            location = form.save(commit=False)
+            location.created_by = request.user
+            location.save()
+            return redirect('manage_omaha')
+    else:
+        form = OmahaLocationForm()
+    
+    return render(request, 'listings/omaha_form.html', {
+        'form': form,
+        'title': 'Add Location to Discover Omaha'
+    })
+
+
+@login_required
+def edit_omaha_location(request, location_id):
+    """View to edit an existing Omaha location."""
+    location = get_object_or_404(OmahaLocation, pk=location_id)
+    
+    if request.method == 'POST':
+        form = OmahaLocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_omaha')
+    else:
+        form = OmahaLocationForm(instance=location)
+    
+    return render(request, 'listings/omaha_form.html', {
+        'form': form,
+        'title': 'Edit Location to Discover Omaha',
+        'is_edit': True
+    })
+
+
+@login_required
+def delete_omaha_location(request, location_id):
+    """View to delete an Omaha location."""
+    location = get_object_or_404(OmahaLocation, pk=location_id)
+    
+    if request.method == 'POST':
+        location.delete()
+        return redirect('manage_omaha')
+        
+    return render(request, 'listings/omaha_delete_confirm.html', {'location': location})
+
+

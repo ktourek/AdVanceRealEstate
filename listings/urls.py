@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('home/', views.home, name='home_alias'),
     path('listings/', views.all_listings, name='listings'),
+    path('omaha/', views.omaha, name='omaha'),
     path('add-listing/', views.add_listing, name='add_listing'),
     path('photo/<int:photo_id>/', views.listing_photo, name='listing_photo'),
     path(
@@ -19,5 +20,13 @@ urlpatterns = [
         name='login'
     ),
     path('logout/', views.custom_logout, name='logout'),
+    
+    # Omaha Management URLs
+    path('omaha/manage/', views.manage_omaha, name='manage_omaha'),
+    path('omaha/add/', views.add_omaha_location, name='add_omaha_location'),
+    path('omaha/edit/<int:location_id>/', views.edit_omaha_location, name='edit_omaha_location'),
+    path('omaha/delete/<int:location_id>/', views.delete_omaha_location, name='delete_omaha_location'),
+    
     # User registration removed - users are managed by admin in Django admin interface
 ]
+

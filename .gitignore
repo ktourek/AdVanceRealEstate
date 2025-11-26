@@ -251,3 +251,4 @@ listings/fixtures/images/ISQA8210-Images/Madison/MadisonHeadshot.png
 listings/fixtures/listings_with_images.backup.json
 listings/fixtures/listings.before_cleanup.json
 db.before_cleanup.sqlite3
+identifier.sqlite

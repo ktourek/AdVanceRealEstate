@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container manage-omaha-page">
+    <div class="manage-header">
+        <h1>Manage Discover Omaha</h1>
+        <p class="subtitle">As {{ user.get_short_name|default:"Admin" }}, you can add or edit Omaha locations on your real estate website and use the filter to search by category.</p>
+    </div>
+
+    <div class="manage-controls">
+        <div class="filter-section">
+            <div class="dropdown">
+                <button class="btn-filter dropdown-toggle" type="button" id="categoryDropdown" onclick="toggleDropdown()">
+                    Category <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu" id="filterDropdown">
+                    <a href="{% url 'manage_omaha' %}" class="dropdown-item {% if not current_category %}active{% endif %}">
+                        <span class="checkbox">{% if not current_category %}<i class="fas fa-check"></i>{% endif %}</span> All
+                    </a>
+                    {% for category in categories %}
+                    <a href="{% url 'manage_omaha' %}?category={{ category }}" class="dropdown-item {% if current_category == category %}active{% endif %}">
+                        <span class="checkbox">{% if current_category == category %}<i class="fas fa-check"></i>{% endif %}</span> {{ category }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if current_category %}
+            <a href="{% url 'manage_omaha' %}" class="clear-filter">Clear Filter</a>
+            {% endif %}
+        </div>
+        
+        <a href="{% url 'add_omaha_location' %}" class="btn-add-location">
+            <i class="fas fa-plus-circle"></i> Add Location
+        </a>
+    </div>
+
+    <div class="locations-grid">
+        {% for location in locations %}
+        <div class="manage-card">
+            <div class="card-header">
+                <h3>{{ location.name }}</h3>
+                <span class="badge badge-{{ location.category|slugify }}">{{ location.category }}</span>
+            </div>
+            <div class="card-body">
+                <p class="description">{{ location.description|truncatechars:100 }}</p>
+                <div class="meta-info">
+                    {% if location.is_published %}
+                    <span class="status-published"><i class="fas fa-check-circle"></i> Published</span>
+                    {% else %}
+                    <span class="status-draft"><i class="fas fa-pen-square"></i> Draft</span>
+                    {% endif %}
+                    <span class="display-order">Order: {{ location.display_order }}</span>
+                </div>
+            </div>
+            <div class="card-actions">
+                <a href="{% url 'edit_omaha_location' location.omaha_location_id %}" class="btn-edit">Edit</a>
+                <a href="{% url 'delete_omaha_location' location.omaha_location_id %}" class="btn-delete">Delete</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-locations-message">
+            <p>No locations found. Click "Add Location" to create one.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleDropdown() {
+        document.getElementById("filterDropdown").classList.toggle("show");
+    }
+
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+        if (!event.target.matches('.btn-filter') && !event.target.matches('.btn-filter *')) {
+            var dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+.manage-omaha-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.manage-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.manage-header h1 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: #000;
+    margin-bottom: 15px;
+}
+
+.manage-header .subtitle {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.1rem;
+    color: #555;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.manage-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-filter {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+    justify-content: space-between;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+    margin-top: 5px;
+    padding: 10px 0;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown-item .checkbox {
+    width: 20px;
+    display: inline-block;
+}
+
+.clear-filter {
+    color: #555;
+    text-decoration: underline;
+    font-size: 0.9rem;
+}
+
+.btn-add-location {
+    display: inline-block;
+    background-color: transparent;
+    color: #000;
+    border: 1px solid #000;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-add-location:hover {
+    background-color: #f0f0f0;
+}
+
+.locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.manage-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: #eee;
+    color: #333;
+}
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.description {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.meta-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.status-published {
+    color: #2c5530;
+}
+
+.status-draft {
+    color: #e67e22;
+}
+
+.card-actions {
+    display: flex;
+}
+
+.btn-edit, .btn-delete {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-edit {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #2980b9;
+}
+
+.btn-delete {
+    background-color: #c0392b;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #a93226;
+}
+
+.no-locations-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .manage-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-section {
+        justify-content: space-between;
+    }
+    
+    .btn-add-location {
+        text-align: center;
+    }
+    
+    .locations-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

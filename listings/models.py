@@ -267,8 +267,49 @@ class SearchLog(models.Model):
         return f"Search log {self.search_log_id} - {self.timestamp}"
 
 
+class OmahaLocation(models.Model):
+    """Omaha Location model for Discover Omaha page (See & Do, Food, Events)."""
+    CATEGORY_CHOICES = [
+        ('See & Do', 'See & Do'),
+        ('Food', 'Food'),
+        ('Events', 'Events'),
+    ]
+    
+    omaha_location_id = models.AutoField(primary_key=True, db_column='Omaha_Location_ID')
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column='Created_By',
+        related_name='omaha_locations'
+    )
+    name = models.CharField(max_length=200, db_column='Name')
+    description = models.TextField(db_column='Description')
+    url = models.URLField(db_column='URL')
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        db_column='Category'
+    )
+    is_published = models.BooleanField(default=True, db_column='Is_Published')
+    display_order = models.IntegerField(default=0, db_column='Display_Order')
+    created_date = models.DateTimeField(auto_now_add=True, db_column='Created_Date')
+    updated_date = models.DateTimeField(auto_now=True, db_column='Updated_Date')
+    
+    class Meta:
+        db_table = 'Omaha_Location'
+        ordering = ['category', 'display_order', 'name']
+        verbose_name = 'Omaha Location'
+        verbose_name_plural = 'Omaha Locations'
+    
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+
+
+# Keep OmahaResource for backward compatibility if needed
 class OmahaResource(models.Model):
-    """Omaha Resource model for optional resources page."""
+    """Omaha Resource model for optional resources page (deprecated - use OmahaLocation)."""
     omaha_resource_id = models.AutoField(primary_key=True, db_column='Omaha_Resource_ID')
     user = models.ForeignKey(
         User,

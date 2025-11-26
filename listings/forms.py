@@ -1,7 +1,7 @@
 # listings/forms.py
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Listing
+from .models import Listing, OmahaLocation
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -121,3 +121,29 @@ class ListingForm(forms.ModelForm):
                 raise forms.ValidationError('Image file too large ( > 5MB )')
         return photos
 
+
+class OmahaLocationForm(forms.ModelForm):
+    """Form for adding and editing Omaha locations."""
+    class Meta:
+        model = OmahaLocation
+        fields = ['name', 'category', 'description', 'url', 'is_published', 'display_order']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Location Name'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Add a description of the location.'}),
+            'url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://example.com'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'name': 'Location Name',
+            'url': 'Location URL',
+            'is_published': 'Publish immediately',
+        }
+        help_texts = {
+            'display_order': 'Lower numbers appear first within the category.',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].empty_label = 'Select a Category'
