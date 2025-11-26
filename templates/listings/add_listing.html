@@ -10,7 +10,7 @@
     </div>
 
     <div class="card" style="padding: 40px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" action="{% url 'add_listing' %}" enctype="multipart/form-data">
             {% csrf_token %}
             
             {% if form.errors %}
@@ -83,12 +83,13 @@
                 <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9fafb;">
                     {{ form.photos }}
                     <small style="display: block; margin-top: 5px; color: #666;">Please upload exactly 4 images.</small>
+                    <div id="file-list" style="margin-top: 10px; color: #333;"></div>
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="form-actions" style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px;">
-                <a href="{% url 'home' %}" class="btn" style="background: #fff; border: 1px solid #ccc; color: #333;">Cancel</a>
+                <a href="{% url 'listings' %}" class="btn" style="background: #fff; border: 1px solid #ccc; color: #333;">Cancel</a>
                 <button type="submit" class="btn" style="background: #869A77; color: #fff;">Add Listing</button>
             </div>
         </form>
@@ -122,4 +123,28 @@
         padding-right: 2.5rem;
     }
 </style>
+
+<script>
+    // Display individual file names when files are selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('{{ form.photos.id_for_label }}');
+        const fileList = document.getElementById('file-list');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    let fileNames = '<strong>Selected files:</strong><ul style="margin: 5px 0 0 20px; padding: 0;">';
+                    for (let i = 0; i < files.length; i++) {
+                        fileNames += '<li>' + files[i].name + '</li>';
+                    }
+                    fileNames += '</ul>';
+                    fileList.innerHTML = fileNames;
+                } else {
+                    fileList.innerHTML = '';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

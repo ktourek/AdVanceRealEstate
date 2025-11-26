@@ -36,14 +36,40 @@ class CustomLoginForm(AuthenticationForm):
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+    
+    def value_from_datadict(self, data, files, name):
+        """Handle multiple file uploads."""
+        if hasattr(files, 'getlist'):
+            return files.getlist(name)
+        return files.get(name)
+
+
+class MultipleFileField(forms.FileField):
+    """Custom field to handle multiple file uploads."""
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        """Clean and validate multiple files."""
+        # Handle single file or list of files
+        if isinstance(data, list):
+            # If it's a list, return it as-is for further validation
+            return data
+        else:
+            # If it's a single file, wrap it in a list
+            single_file_clean = super().clean(data, initial)
+            if single_file_clean is None:
+                return None
+            return [single_file_clean]
 
 
 class ListingForm(forms.ModelForm):
     """Form for creating new property listings."""
-    photos = forms.FileField(
-        widget=MultipleFileInput(attrs={'multiple': True}),
+    photos = MultipleFileField(
         label='Upload Property Photos',
-        help_text='Please upload exactly 4 images.'
+        help_text='Please upload exactly 4 images.',
+        required=True
     )
 
     class Meta:
@@ -53,13 +79,13 @@ class ListingForm(forms.ModelForm):
             'bedrooms', 'bathrooms', 'square_footage', 'status', 'description'
         ]
         widgets = {
-            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '1234 Elm St , Omaha, NE 12345'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '456000'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter address information'}),
+            'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter price'}),
             'property_type': forms.Select(attrs={'class': 'form-control'}),
             'neighborhood': forms.Select(attrs={'class': 'form-control'}),
-            'bedrooms': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 2'}),
-            'bathrooms': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 1'}),
-            'square_footage': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '1500'}),
+            'bedrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bedrooms'}),
+            'bathrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bathrooms'}),
+            'square_footage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter square footage'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Describe the property, features, and nearby attractions...'}),
         }
@@ -69,9 +95,22 @@ class ListingForm(forms.ModelForm):
             'status': 'Listing Status',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add empty_label for ForeignKey select fields with meaningful messages
+        self.fields['property_type'].empty_label = 'Select a home type'
+        self.fields['neighborhood'].empty_label = 'Select a neighborhood'
+        
+        # For CharField with choices (status), add an empty choice at the beginning
+        self.fields['status'].choices = [('', 'Select listing status')] + list(self.fields['status'].choices)
+
     def clean_photos(self):
         """Validate that exactly 4 photos are uploaded."""
-        photos = self.files.getlist('photos')
+        photos = self.cleaned_data.get('photos')
+        
+        if not photos:
+            raise forms.ValidationError('Please upload photos.')
+            
         if len(photos) != 4:
             raise forms.ValidationError(f'You must upload exactly 4 photos. You uploaded {len(photos)}.')
         

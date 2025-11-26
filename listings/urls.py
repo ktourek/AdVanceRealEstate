@@ -9,6 +9,7 @@ urlpatterns = [
     path('home/', views.home, name='home_alias'),
     path('listings/', views.all_listings, name='listings'),
     path('add-listing/', views.add_listing, name='add_listing'),
+    path('photo/<int:photo_id>/', views.listing_photo, name='listing_photo'),
     path(
         'login/',
         auth_views.LoginView.as_view(

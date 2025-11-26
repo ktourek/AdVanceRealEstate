@@ -1,44 +1,172 @@
 {% extends "base.html" %}
+{% load static %}
+{% load humanize %}
 
 {% block content %}
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; margin-top: 40px;">
-        <h1 style="font-size: 32px; font-weight: 700; margin: 0;">Available Listings</h1>
-        {% if user.is_authenticated %}
-        <a href="{% url 'add_listing' %}" class="btn" style="background: #869A77; color: #fff; text-decoration: none;">
+    <!-- Header with Add Listing Button -->
+    {% if user.is_authenticated %}
+    <div class="listings-header">
+        <a href="{% url 'add_listing' %}" class="add-listing-btn">
             <i class="fas fa-plus" style="margin-right: 8px;"></i>Add Listing
         </a>
-        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Sorting and Filtering Section -->
+    <div class="sort-filter-section">
+        <h2 class="sort-title">Sort listings by...</h2>
+        <div class="filter-dropdowns">
+            <select class="filter-dropdown" id="price-filter" name="price" onchange="applyFilters()">
+                <option value="">Price</option>
+                <option value="low-high" {% if selected_price == 'low-high' %}selected{% endif %}>Low to High</option>
+                <option value="high-low" {% if selected_price == 'high-low' %}selected{% endif %}>High to Low</option>
+            </select>
+            <select class="filter-dropdown" id="neighborhood-filter" name="neighborhood" onchange="applyFilters()">
+                <option value="">Neighborhood</option>
+                {% for neighborhood in neighborhoods %}
+                <option value="{{ neighborhood.pk }}" {% if selected_neighborhood == neighborhood.pk %}selected{% endif %}>{{ neighborhood.name }}</option>
+                {% endfor %}
+            </select>
+            <select class="filter-dropdown" id="type-filter" name="type" onchange="applyFilters()">
+                <option value="">Type</option>
+                {% for prop_type in property_types %}
+                <option value="{{ prop_type.pk }}" {% if selected_type == prop_type.pk %}selected{% endif %}>{{ prop_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     {% if listings %}
-    <div class="grid">
+    <div class="listings-grid">
         {% for item in listings %}
-        <article class="card">
-            {% if item.photos.first %}
-                <!-- Placeholder for photo if we had a view for it -->
-                <div style="height: 200px; background: #eee; border-radius: 8px; margin-bottom: 15px; overflow: hidden;">
-                    <!-- Using a static placeholder for now as we don't have the image view yet -->
-                     <img src="https://placehold.co/400x300?text=Home" alt="{{ item.address }}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-            {% endif %}
-            <h2>{{ item.address }}</h2>
-            <p class="price">${{ item.price }}</p>
-            <p class="muted">{{ item.neighborhood.name }}</p>
-            <div style="display: flex; gap: 15px; margin: 10px 0; font-size: 14px; color: #666;">
-                <span><i class="fas fa-bed"></i> {{ item.bedrooms|default:"-" }}</span>
-                <span><i class="fas fa-bath"></i> {{ item.bathrooms|default:"-" }}</span>
-                <span><i class="fas fa-ruler-combined"></i> {{ item.square_footage|default:"-" }} sqft</span>
+        <article class="listing-card">
+            {% with first_photo=item.photos.first %}
+            {% if first_photo %}
+            <div class="listing-image-container">
+                <img src="{% url 'listing_photo' first_photo.photo_id %}" alt="{{ item.address }}" class="listing-image">
             </div>
-            <p>{{ item.description|truncatechars:100 }}</p>
-            <p class="muted" style="margin-top: 15px; font-size: 12px;">Listed: {{ item.listed_date|date:"M d, Y" }}</p>
+            {% else %}
+            <div class="listing-image-container">
+                <img src="https://placehold.co/400x300?text=No+Image" alt="{{ item.address }}" class="listing-image">
+            </div>
+            {% endif %}
+            {% endwith %}
+            
+            <div class="listing-content">
+                <div class="listing-status">
+                    {% if item.status_id %}
+                        {% if item.status_id.name == 'Active' %}
+                            <span class="status-dot status-dot-green"></span>
+                            <span class="status-text">For Sale</span>
+                        {% elif item.status_id.name == 'Pending' %}
+                            <span class="status-dot status-dot-yellow"></span>
+                            <span class="status-text">Pending</span>
+                        {% elif item.status_id.name == 'Sold' %}
+                            <span class="status-dot status-dot-red"></span>
+                            <span class="status-text">Sold</span>
+                        {% endif %}
+                    {% elif item.status %}
+                        {# Fallback to status CharField if status_id is not set #}
+                        {% if item.status == 'Available' %}
+                            <span class="status-dot status-dot-green"></span>
+                            <span class="status-text">For Sale</span>
+                        {% elif item.status == 'Pending' %}
+                            <span class="status-dot status-dot-yellow"></span>
+                            <span class="status-text">Pending</span>
+                        {% elif item.status == 'Sold' %}
+                            <span class="status-dot status-dot-red"></span>
+                            <span class="status-text">Sold</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="listing-price">${{ item.price|floatformat:0|intcomma }}</div>
+                
+                <div class="listing-address">{{ item.address }}</div>
+                
+                <div class="listing-type-neighborhood">
+                    <span class="listing-type">{{ item.property_type.name }}</span>
+                    <span class="listing-separator">•</span>
+                    <span class="listing-neighborhood">{{ item.neighborhood.name }}</span>
+                </div>
+                
+                <div class="listing-details">
+                    {% if item.bedrooms %}{{ item.bedrooms }} Bed{% endif %}
+                    {% if item.bedrooms and item.bathrooms %} | {% endif %}
+                    {% if item.bathrooms %}{{ item.bathrooms }} Bath{% endif %}
+                    {% if item.square_footage %}
+                        {% if item.bedrooms or item.bathrooms %} | {% endif %}
+                        {{ item.square_footage|floatformat:0|intcomma }} Sqft
+                    {% endif %}
+                </div>
+            </div>
         </article>
         {% endfor %}
     </div>
     {% else %}
-    <div style="text-align: center; padding: 60px; background: #f9fafb; border-radius: 8px;">
-        <p style="font-size: 18px; color: #666;">No listings found.</p>
+    <div class="no-listings">
+        <p>No listings found.</p>
+    </div>
+    {% endif %}
+    
+    <!-- Pagination -->
+    {% if listings.has_other_pages %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if listings.has_previous %}
+                <a href="?page=1{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">&laquo; First</a>
+                <a href="?page={{ listings.previous_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">&lsaquo; Previous</a>
+            {% endif %}
+            
+            <span class="pagination-info">
+                Page {{ listings.number }} of {{ listings.paginator.num_pages }}
+            </span>
+            
+            {% if listings.has_next %}
+                <a href="?page={{ listings.next_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">Next &rsaquo;</a>
+                <a href="?page={{ listings.paginator.num_pages }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">Last &raquo;</a>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 </div>
+
+<script>
+// Apply filters by submitting form with query parameters
+function applyFilters() {
+    const priceFilter = document.getElementById('price-filter');
+    const neighborhoodFilter = document.getElementById('neighborhood-filter');
+    const typeFilter = document.getElementById('type-filter');
+    
+    const params = new URLSearchParams();
+    
+    // Always include all filter values (even if empty, to reset filters)
+    if (priceFilter.value) {
+        params.append('price', priceFilter.value);
+    }
+    if (neighborhoodFilter.value) {
+        params.append('neighborhood', neighborhoodFilter.value);
+    }
+    if (typeFilter.value) {
+        params.append('type', typeFilter.value);
+    }
+    
+    // Debug: log the filter values
+    console.log('Applying filters:', {
+        price: priceFilter.value,
+        neighborhood: neighborhoodFilter.value,
+        type: typeFilter.value
+    });
+    
+    // Reset to page 1 when filters change
+    // Don't preserve page parameter - start from first page with new filters
+    
+    // Redirect with filters
+    const queryString = params.toString();
+    const newUrl = '{% url "listings" %}' + (queryString ? '?' + queryString : '');
+    console.log('Redirecting to:', newUrl);
+    window.location.href = newUrl;
+}
+</script>
 {% endblock %}
