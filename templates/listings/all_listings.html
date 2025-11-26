@@ -18,9 +18,15 @@
         <h2 class="sort-title">Sort listings by...</h2>
         <div class="filter-dropdowns">
             <select class="filter-dropdown" id="price-filter" name="price" onchange="applyFilters()">
-                <option value="">Price</option>
+                <option value="">Price Sort</option>
                 <option value="low-high" {% if selected_price == 'low-high' %}selected{% endif %}>Low to High</option>
                 <option value="high-low" {% if selected_price == 'high-low' %}selected{% endif %}>High to Low</option>
+            </select>
+            <select class="filter-dropdown" id="price-range-filter" name="price_range" onchange="applyFilters()">
+                <option value="">Price Range</option>
+                {% for pricebucket in pricebuckets %}
+                <option value="{{ pricebucket.pk }}" {% if selected_price_range == pricebucket.pk %}selected{% endif %}>{{ pricebucket.range }}</option>
+                {% endfor %}
             </select>
             <select class="filter-dropdown" id="neighborhood-filter" name="neighborhood" onchange="applyFilters()">
                 <option value="">Neighborhood</option>
@@ -37,113 +43,33 @@
         </div>
     </div>
 
-    {% if listings %}
-    <div class="listings-grid">
-        {% for item in listings %}
-        <article class="listing-card">
-            {% with first_photo=item.photos.first %}
-            {% if first_photo %}
-            <div class="listing-image-container">
-                <img src="{% url 'listing_photo' first_photo.photo_id %}" alt="{{ item.address }}" class="listing-image">
-            </div>
-            {% else %}
-            <div class="listing-image-container">
-                <img src="https://placehold.co/400x300?text=No+Image" alt="{{ item.address }}" class="listing-image">
-            </div>
-            {% endif %}
-            {% endwith %}
-            
-            <div class="listing-content">
-                <div class="listing-status">
-                    {% if item.status_id %}
-                        {% if item.status_id.name == 'Active' %}
-                            <span class="status-dot status-dot-green"></span>
-                            <span class="status-text">For Sale</span>
-                        {% elif item.status_id.name == 'Pending' %}
-                            <span class="status-dot status-dot-yellow"></span>
-                            <span class="status-text">Pending</span>
-                        {% elif item.status_id.name == 'Sold' %}
-                            <span class="status-dot status-dot-red"></span>
-                            <span class="status-text">Sold</span>
-                        {% endif %}
-                    {% elif item.status %}
-                        {# Fallback to status CharField if status_id is not set #}
-                        {% if item.status == 'Available' %}
-                            <span class="status-dot status-dot-green"></span>
-                            <span class="status-text">For Sale</span>
-                        {% elif item.status == 'Pending' %}
-                            <span class="status-dot status-dot-yellow"></span>
-                            <span class="status-text">Pending</span>
-                        {% elif item.status == 'Sold' %}
-                            <span class="status-dot status-dot-red"></span>
-                            <span class="status-text">Sold</span>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                
-                <div class="listing-price">${{ item.price|floatformat:0|intcomma }}</div>
-                
-                <div class="listing-address">{{ item.address }}</div>
-                
-                <div class="listing-type-neighborhood">
-                    <span class="listing-type">{{ item.property_type.name }}</span>
-                    <span class="listing-separator">•</span>
-                    <span class="listing-neighborhood">{{ item.neighborhood.name }}</span>
-                </div>
-                
-                <div class="listing-details">
-                    {% if item.bedrooms %}{{ item.bedrooms }} Bed{% endif %}
-                    {% if item.bedrooms and item.bathrooms %} | {% endif %}
-                    {% if item.bathrooms %}{{ item.bathrooms }} Bath{% endif %}
-                    {% if item.square_footage %}
-                        {% if item.bedrooms or item.bathrooms %} | {% endif %}
-                        {{ item.square_footage|floatformat:0|intcomma }} Sqft
-                    {% endif %}
-                </div>
-            </div>
-        </article>
-        {% endfor %}
+    <!-- Listings Container (updated via AJAX) -->
+    <div id="listings-container">
+        {% include 'listings/listing_fragment.html' %}
     </div>
-    {% else %}
-    <div class="no-listings">
-        <p>No listings found.</p>
-    </div>
-    {% endif %}
     
-    <!-- Pagination -->
-    {% if listings.has_other_pages %}
-    <div class="pagination-container">
-        <div class="pagination">
-            {% if listings.has_previous %}
-                <a href="?page=1{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">&laquo; First</a>
-                <a href="?page={{ listings.previous_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">&lsaquo; Previous</a>
-            {% endif %}
-            
-            <span class="pagination-info">
-                Page {{ listings.number }} of {{ listings.paginator.num_pages }}
-            </span>
-            
-            {% if listings.has_next %}
-                <a href="?page={{ listings.next_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">Next &rsaquo;</a>
-                <a href="?page={{ listings.paginator.num_pages }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link">Last &raquo;</a>
-            {% endif %}
-        </div>
+    <!-- Pagination Container (updated via AJAX) -->
+    <div id="pagination-container">
+        {% include 'listings/pagination_fragment.html' %}
     </div>
-    {% endif %}
 </div>
 
 <script>
-// Apply filters by submitting form with query parameters
+// Apply filters using AJAX (no page reload)
 function applyFilters() {
     const priceFilter = document.getElementById('price-filter');
+    const priceRangeFilter = document.getElementById('price-range-filter');
     const neighborhoodFilter = document.getElementById('neighborhood-filter');
     const typeFilter = document.getElementById('type-filter');
     
     const params = new URLSearchParams();
     
-    // Always include all filter values (even if empty, to reset filters)
+    // Build query parameters
     if (priceFilter.value) {
         params.append('price', priceFilter.value);
+    }
+    if (priceRangeFilter.value) {
+        params.append('price_range', priceRangeFilter.value);
     }
     if (neighborhoodFilter.value) {
         params.append('neighborhood', neighborhoodFilter.value);
@@ -152,21 +78,73 @@ function applyFilters() {
         params.append('type', typeFilter.value);
     }
     
-    // Debug: log the filter values
-    console.log('Applying filters:', {
-        price: priceFilter.value,
-        neighborhood: neighborhoodFilter.value,
-        type: typeFilter.value
-    });
-    
-    // Reset to page 1 when filters change
-    // Don't preserve page parameter - start from first page with new filters
-    
-    // Redirect with filters
+    // Update URL without reloading page (without ajax parameter)
     const queryString = params.toString();
-    const newUrl = '{% url "listings" %}' + (queryString ? '?' + queryString : '');
-    console.log('Redirecting to:', newUrl);
-    window.location.href = newUrl;
+    const displayUrl = '{% url "listings" %}' + (queryString ? '?' + queryString : '');
+    window.history.pushState({}, '', displayUrl);
+    
+    // Add AJAX parameter for fetch request only
+    params.append('ajax', '1');
+    const paramString = params.toString();
+    const baseUrl = '{% url "listings" %}';
+    const fetchUrl = baseUrl + (paramString ? '?' + paramString : '');
+    
+    // Debug: log the fetch URL
+    console.log('Base URL:', baseUrl);
+    console.log('Parameters:', paramString);
+    console.log('Full Fetch URL:', fetchUrl);
+    console.log('AJAX parameter present:', paramString.includes('ajax=1'));
+    
+    // Show loading state
+    const listingsContainer = document.getElementById('listings-container');
+    const paginationContainer = document.getElementById('pagination-container');
+    listingsContainer.innerHTML = '<div class="no-listings"><p>Loading...</p></div>';
+    paginationContainer.innerHTML = '';
+    
+    // Fetch filtered results via AJAX
+    fetch(fetchUrl, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // If not JSON, try to get text to see what we got
+            return response.text().then(text => {
+                console.error('Expected JSON but got:', contentType, text.substring(0, 200));
+                throw new Error('Server returned HTML instead of JSON. Check if AJAX detection is working.');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Check for error in response
+        if (data.error) {
+            console.error('Server error:', data.error);
+            listingsContainer.innerHTML = '<div class="no-listings"><p>Error loading listings. Please refresh the page.</p></div>';
+            return;
+        }
+        
+        // Update listings container
+        listingsContainer.innerHTML = data.listings_html;
+        
+        // Update pagination container (links will use normal navigation)
+        paginationContainer.innerHTML = data.pagination_html;
+        
+        // Scroll to top of listings
+        listingsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(error => {
+        console.error('Error fetching listings:', error);
+        listingsContainer.innerHTML = '<div class="no-listings"><p>Error loading listings. Please refresh the page.</p></div>';
+    });
 }
+
+// Note: Pagination links use normal navigation (full page load) to keep behavior simple.
 </script>
 {% endblock %}
+
+

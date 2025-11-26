@@ -61,6 +61,19 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Large fixture files (exceed GitHub 50MB limit)
+listings/fixtures/listings.json
+
+# Fixture images (large binary files should not be committed)
+listings/fixtures/images/*.png
+listings/fixtures/images/*.jpg
+listings/fixtures/images/*.jpeg
+listings/fixtures/images/*.gif
+
+# Large documentation/media files
+docs/*.zip
+docs/*.pdf
+
 # Flask stuff:
 instance/
 .webassets-cache
@@ -205,3 +218,36 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Eat/Block16.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Eat/BlueSushi.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Eat/Upstream.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Events/FarmersMarket.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Events/LightsFestival.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/Events/TasteOfOmaha.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/SeeAndDo/Gardens.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/SeeAndDo/GeneLeahy.png
+listings/fixtures/images/ISQA8210-Images/DiscoverOmaha/SeeAndDo/zoo.png
+listings/fixtures/images/ISQA8210-Images/Listings/10206/10206-1.png
+listings/fixtures/images/ISQA8210-Images/Listings/10206/10206-2.png
+listings/fixtures/images/ISQA8210-Images/Listings/10206/10206-3.png
+listings/fixtures/images/ISQA8210-Images/Listings/10206/10206-4.png
+listings/fixtures/images/ISQA8210-Images/Listings/2702/2702-1.png
+listings/fixtures/images/ISQA8210-Images/Listings/3340/3340-1.png
+listings/fixtures/images/ISQA8210-Images/Listings/3340/3340-2.png
+listings/fixtures/images/ISQA8210-Images/Listings/3340/3340-3.png
+listings/fixtures/images/ISQA8210-Images/Listings/3340/3340-4.png
+listings/fixtures/images/ISQA8210-Images/Listings/5550/5550-1.png
+listings/fixtures/images/ISQA8210-Images/Listings/5550/5550-2.png
+listings/fixtures/images/ISQA8210-Images/Listings/5550/5550-3.png
+listings/fixtures/images/ISQA8210-Images/Listings/5550/5550-4.png
+listings/fixtures/images/ISQA8210-Images/Listings/6317/6317-1.png
+listings/fixtures/images/ISQA8210-Images/Listings/6317/6317-2.png
+listings/fixtures/images/ISQA8210-Images/Listings/6317/6317-3.png
+listings/fixtures/images/ISQA8210-Images/Listings/6317/6317-4.png
+listings/fixtures/images/ISQA8210-Images/Listings/7914/7914.png
+listings/fixtures/images/ISQA8210-Images/Logo/blackLogo.png
+listings/fixtures/images/ISQA8210-Images/Logo/greenLogo.png
+listings/fixtures/images/ISQA8210-Images/Madison/MadisonHeadshot.png
+listings/fixtures/listings_with_images.backup.json
+listings/fixtures/listings.before_cleanup.json
+db.before_cleanup.sqlite3

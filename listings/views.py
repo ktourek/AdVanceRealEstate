@@ -2,9 +2,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Listing, Photo, Neighborhood, PropertyType, Status
+from django.utils import timezone
+from django.template.loader import render_to_string
+from decimal import Decimal
+import re
+from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog
 from .forms import ListingForm
 
 
@@ -22,6 +26,21 @@ def home(request):
 
 def all_listings(request):
     """Page showing all available listings with filtering and pagination."""
+    # Check if this is an AJAX request FIRST (before processing)
+    # Check GET parameter first (most reliable method)
+    ajax_param = request.GET.get('ajax', '')
+    is_ajax = ajax_param == '1' or ajax_param == 'true'
+    
+    # Also check headers as fallback
+    if not is_ajax:
+        # Try request.headers (Django 2.2+)
+        if hasattr(request, 'headers'):
+            header_val = request.headers.get('X-Requested-With', '')
+            is_ajax = header_val == 'XMLHttpRequest'
+        # Fallback to META for older Django versions
+        if not is_ajax and 'HTTP_X_REQUESTED_WITH' in request.META:
+            is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+    
     # Start with all visible listings
     listings = Listing.objects.filter(is_visible=True).prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
     
@@ -29,12 +48,21 @@ def all_listings(request):
     neighborhood_id = request.GET.get('neighborhood', '').strip()
     property_type_id = request.GET.get('type', '').strip()
     price_sort = request.GET.get('price', '').strip()
+    price_range_id = request.GET.get('price_range', '').strip()
+    
+    # Track if we need to log the search
+    should_log_search = False
+    search_log_pricebucket = None
+    search_log_neighborhood = None
+    search_log_property_type = None
     
     if neighborhood_id:
         try:
             neighborhood_id_int = int(neighborhood_id)
             # Use the database column name directly since db_column is custom
             listings = listings.filter(neighborhood_id=neighborhood_id_int)
+            search_log_neighborhood = Neighborhood.objects.filter(pk=neighborhood_id_int).first()
+            should_log_search = True
         except (ValueError, TypeError):
             pass
     
@@ -43,6 +71,32 @@ def all_listings(request):
             property_type_id_int = int(property_type_id)
             # Use the database column name directly since db_column is custom
             listings = listings.filter(property_type_id=property_type_id_int)
+            search_log_property_type = PropertyType.objects.filter(pk=property_type_id_int).first()
+            should_log_search = True
+        except (ValueError, TypeError):
+            pass
+    
+    # Apply price range filtering
+    if price_range_id:
+        try:
+            price_range_id_int = int(price_range_id)
+            pricebucket = Pricebucket.objects.filter(pk=price_range_id_int).first()
+            if pricebucket:
+                # Parse the price range from the bucket's range string
+                # Format: "$X - $Y" or "$X+"
+                range_str = pricebucket.range
+                min_price, max_price = parse_price_range(range_str)
+                
+                if min_price is not None:
+                    if max_price is not None:
+                        # Range with upper bound
+                        listings = listings.filter(price__gte=min_price, price__lt=max_price)
+                    else:
+                        # Open-ended range (e.g., "$1,000,000+")
+                        listings = listings.filter(price__gte=min_price)
+                
+                search_log_pricebucket = pricebucket
+                should_log_search = True
         except (ValueError, TypeError):
             pass
     
@@ -53,6 +107,15 @@ def all_listings(request):
         listings = listings.order_by('-price')
     else:
         listings = listings.order_by('-listed_date')
+    
+    # Log the search if any filter was applied
+    if should_log_search:
+        SearchLog.objects.create(
+            pricebucket=search_log_pricebucket,
+            neighborhood=search_log_neighborhood,
+            property_type=search_log_property_type,
+            timestamp=timezone.now()
+        )
     
     # Pagination
     paginator = Paginator(listings, 12)  # Show 12 listings per page
@@ -69,6 +132,7 @@ def all_listings(request):
     
     neighborhoods = Neighborhood.objects.all().order_by('name')
     property_types = PropertyType.objects.all().order_by('name')
+    pricebuckets = Pricebucket.objects.all().order_by('pricebucket_id')
     
     # Preserve filter values in context for template (with error handling)
     try:
@@ -81,16 +145,90 @@ def all_listings(request):
     except (ValueError, TypeError):
         selected_type = None
     
+    try:
+        selected_price_range = int(price_range_id) if price_range_id else None
+    except (ValueError, TypeError):
+        selected_price_range = None
+    
     context = {
         'listings': paginated_listings,
         'neighborhoods': neighborhoods,
         'property_types': property_types,
+        'pricebuckets': pricebuckets,
         'selected_neighborhood': selected_neighborhood,
         'selected_type': selected_type,
         'selected_price': price_sort or '',
+        'selected_price_range': selected_price_range,
     }
     
+    # Return JSON response if this is an AJAX request
+    if is_ajax:
+        # Return JSON response with HTML fragments
+        try:
+            listings_html = render_to_string('listings/listing_fragment.html', {'listings': paginated_listings}, request=request)
+            pagination_html = render_to_string('listings/pagination_fragment.html', {
+                'listings': paginated_listings,
+                'selected_price': price_sort or '',
+                'selected_price_range': selected_price_range,
+                'selected_neighborhood': selected_neighborhood,
+                'selected_type': selected_type,
+            }, request=request)
+            
+            response = JsonResponse({
+                'listings_html': listings_html,
+                'pagination_html': pagination_html,
+                'has_listings': paginated_listings.paginator.count > 0,
+                'total_count': paginated_listings.paginator.count,
+                'current_page': paginated_listings.number,
+                'total_pages': paginated_listings.paginator.num_pages,
+            })
+            # Ensure content-type is set correctly
+            response['Content-Type'] = 'application/json'
+            return response
+        except Exception as e:
+            # If there's an error rendering templates, return error as JSON
+            import traceback
+            error_response = JsonResponse({
+                'error': str(e),
+                'traceback': traceback.format_exc(),
+                'listings_html': '<div class="no-listings"><p>Error loading listings.</p></div>',
+                'pagination_html': '',
+            }, status=500)
+            error_response['Content-Type'] = 'application/json'
+            return error_response
+    
+    # Regular HTML response
     return render(request, 'listings/all_listings.html', context)
+
+
+def parse_price_range(range_str):
+    """
+    Parse a price range string and return (min_price, max_price) tuple.
+    Returns (None, None) if parsing fails.
+    Examples:
+        "$0 - $50,000" -> (0, 50000)
+        "$1,000,000+" -> (1000000, None)
+    """
+    try:
+        # Remove dollar signs and spaces
+        range_str = range_str.replace('$', '').replace(',', '').strip()
+        
+        # Check for open-ended range (e.g., "$1,000,000+")
+        if '+' in range_str:
+            min_price = Decimal(range_str.replace('+', '').strip())
+            return (min_price, None)
+        
+        # Split by dash for range
+        if ' - ' in range_str:
+            parts = range_str.split(' - ')
+            if len(parts) == 2:
+                min_price = Decimal(parts[0].strip())
+                max_price = Decimal(parts[1].strip())
+                return (min_price, max_price)
+        
+        return (None, None)
+    except (ValueError, TypeError):
+        return (None, None)
 
 
 @login_required

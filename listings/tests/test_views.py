@@ -5,7 +5,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
-from listings.models import Listing, Photo, PropertyType, Neighborhood, Status
+from listings.models import Listing, Photo, PropertyType, Neighborhood, Status, Pricebucket, SearchLog
 from listings.forms import ListingForm
 
 User = get_user_model()
@@ -464,6 +464,17 @@ class AllListingsViewTests(TestCase):
         self.status_active = Status.objects.create(name='Active')
         self.status_pending = Status.objects.create(name='Pending')
         
+        # Create price buckets for testing price range filtering
+        self.pricebucket_0_50k = Pricebucket.objects.create(range='$0 - $50,000')
+        self.pricebucket_50_100k = Pricebucket.objects.create(range='$50,000 - $100,000')
+        self.pricebucket_100_150k = Pricebucket.objects.create(range='$100,000 - $150,000')
+        self.pricebucket_150_200k = Pricebucket.objects.create(range='$150,000 - $200,000')
+        self.pricebucket_200_250k = Pricebucket.objects.create(range='$200,000 - $250,000')
+        self.pricebucket_250_300k = Pricebucket.objects.create(range='$250,000 - $300,000')
+        self.pricebucket_300_350k = Pricebucket.objects.create(range='$300,000 - $350,000')
+        self.pricebucket_350_400k = Pricebucket.objects.create(range='$350,000 - $400,000')
+        self.pricebucket_1m_plus = Pricebucket.objects.create(range='$1,000,000+')
+        
         # Create multiple listings for testing pagination and filtering
         self.create_test_listings()
     
@@ -528,6 +539,71 @@ class AllListingsViewTests(TestCase):
         for listing in listings:
             self.assertEqual(listing.neighborhood, self.neighborhood_downtown)
     
+    def test_neighborhood_search_logging(self):
+        """Test that neighborhood searches are logged to SearchLog."""
+        initial_log_count = SearchLog.objects.count()
+        
+        # Perform a neighborhood search
+        response = self.client.get(reverse('listings'), {'neighborhood': self.neighborhood_downtown.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify a search log entry was created
+        new_log_count = SearchLog.objects.count()
+        self.assertEqual(new_log_count, initial_log_count + 1)
+        
+        # Verify the log entry has correct neighborhood
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.neighborhood, self.neighborhood_downtown)
+        self.assertIsNone(latest_log.property_type)  # No property type filter
+        self.assertIsNone(latest_log.pricebucket)  # No price range filter
+        self.assertIsNotNone(latest_log.timestamp)
+    
+    def test_neighborhood_search_logging_with_visible_only(self):
+        """Test that neighborhood search logging only occurs for visible listings."""
+        # Create a visible and hidden listing in the same neighborhood
+        visible_listing = Listing.objects.create(
+            address='Visible Downtown St, Omaha, NE 68102',
+            price=150000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        hidden_listing = Listing.objects.create(
+            address='Hidden Downtown St, Omaha, NE 68102',
+            price=150000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=False
+        )
+        
+        initial_log_count = SearchLog.objects.count()
+        
+        # Filter by neighborhood
+        response = self.client.get(reverse('listings'), {'neighborhood': self.neighborhood_downtown.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify search was logged
+        new_log_count = SearchLog.objects.count()
+        self.assertEqual(new_log_count, initial_log_count + 1)
+        
+        # Verify only visible listing is in results
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        self.assertIn('Visible Downtown St, Omaha, NE 68102', listing_addresses)
+        self.assertNotIn('Hidden Downtown St, Omaha, NE 68102', listing_addresses)
+        
+        # Verify the log entry
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.neighborhood, self.neighborhood_downtown)
+        self.assertIsNotNone(latest_log.timestamp)
+    
     def test_filter_by_property_type(self):
         """Test filtering listings by property type."""
         response = self.client.get(reverse('listings'), {'type': self.property_type_house.pk})
@@ -536,6 +612,71 @@ class AllListingsViewTests(TestCase):
         listings = response.context['listings']
         for listing in listings:
             self.assertEqual(listing.property_type, self.property_type_house)
+    
+    def test_property_type_search_logging(self):
+        """Test that property type searches are logged to SearchLog."""
+        initial_log_count = SearchLog.objects.count()
+        
+        # Perform a property type search
+        response = self.client.get(reverse('listings'), {'type': self.property_type_condo.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify a search log entry was created
+        new_log_count = SearchLog.objects.count()
+        self.assertEqual(new_log_count, initial_log_count + 1)
+        
+        # Verify the log entry has correct property_type
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.property_type, self.property_type_condo)
+        self.assertIsNone(latest_log.neighborhood)  # No neighborhood filter
+        self.assertIsNone(latest_log.pricebucket)  # No price range filter
+        self.assertIsNotNone(latest_log.timestamp)
+    
+    def test_property_type_search_logging_with_visible_only(self):
+        """Test that property type search logging only occurs for visible listings."""
+        # Create a visible and hidden listing of the same property type
+        visible_listing = Listing.objects.create(
+            address='Visible Condo St, Omaha, NE 68102',
+            price=150000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_condo,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        hidden_listing = Listing.objects.create(
+            address='Hidden Condo St, Omaha, NE 68102',
+            price=150000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_condo,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=False
+        )
+        
+        initial_log_count = SearchLog.objects.count()
+        
+        # Filter by property type
+        response = self.client.get(reverse('listings'), {'type': self.property_type_condo.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify search was logged
+        new_log_count = SearchLog.objects.count()
+        self.assertEqual(new_log_count, initial_log_count + 1)
+        
+        # Verify only visible listing is in results
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        self.assertIn('Visible Condo St, Omaha, NE 68102', listing_addresses)
+        self.assertNotIn('Hidden Condo St, Omaha, NE 68102', listing_addresses)
+        
+        # Verify the log entry
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.property_type, self.property_type_condo)
+        self.assertIsNotNone(latest_log.timestamp)
     
     def test_filter_by_price_low_to_high(self):
         """Test sorting by price low to high."""
@@ -679,4 +820,317 @@ class AllListingsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         # Should still return listings (ignoring invalid filters)
         self.assertIn('listings', response.context)
+    
+    def test_filter_by_price_range(self):
+        """Test filtering listings by price range."""
+        # Create listings in different price ranges
+        listing_75k = Listing.objects.create(
+            address='75k Test St, Omaha, NE 68102',
+            price=75000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_125k = Listing.objects.create(
+            address='125k Test St, Omaha, NE 68102',
+            price=125000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_175k = Listing.objects.create(
+            address='175k Test St, Omaha, NE 68102',
+            price=175000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        # Test filtering by $50k-$100k range
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        
+        # Should include listing_75k (within range)
+        self.assertIn('75k Test St, Omaha, NE 68102', listing_addresses)
+        # Should NOT include listings outside range
+        self.assertNotIn('125k Test St, Omaha, NE 68102', listing_addresses)
+        self.assertNotIn('175k Test St, Omaha, NE 68102', listing_addresses)
+        
+        # Verify all returned listings are within the price range
+        for listing in listings:
+            self.assertGreaterEqual(float(listing.price), 50000)
+            self.assertLess(float(listing.price), 100000)
+    
+    def test_filter_by_price_range_boundaries(self):
+        """Test that price range filtering correctly handles boundaries."""
+        # Create listings at exact boundaries
+        listing_50k = Listing.objects.create(
+            address='50k Boundary St, Omaha, NE 68102',
+            price=50000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_100k = Listing.objects.create(
+            address='100k Boundary St, Omaha, NE 68102',
+            price=100000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        # Test $50k-$100k range (should include 50k, exclude 100k)
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        
+        # 50k should be included (lower bound inclusive)
+        self.assertIn('50k Boundary St, Omaha, NE 68102', listing_addresses)
+        # 100k should NOT be included (upper bound exclusive)
+        self.assertNotIn('100k Boundary St, Omaha, NE 68102', listing_addresses)
+    
+    def test_filter_by_price_range_open_ended(self):
+        """Test filtering by open-ended price range ($1,000,000+)."""
+        # Create listings above and below 1M
+        listing_900k = Listing.objects.create(
+            address='900k Test St, Omaha, NE 68102',
+            price=900000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_1_5m = Listing.objects.create(
+            address='1.5M Test St, Omaha, NE 68102',
+            price=1500000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        # Test $1M+ range
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_1m_plus.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        
+        # Should include 1.5M (>= 1M)
+        self.assertIn('1.5M Test St, Omaha, NE 68102', listing_addresses)
+        # Should NOT include 900k (< 1M)
+        self.assertNotIn('900k Test St, Omaha, NE 68102', listing_addresses)
+        
+        # Verify all returned listings are >= 1M
+        for listing in listings:
+            self.assertGreaterEqual(float(listing.price), 1000000)
+    
+    def test_price_range_filter_with_visible_only(self):
+        """Test that price range filtering only shows visible listings."""
+        # Create visible and hidden listings in the same price range
+        visible_listing = Listing.objects.create(
+            address='Visible 75k St, Omaha, NE 68102',
+            price=75000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        hidden_listing = Listing.objects.create(
+            address='Hidden 75k St, Omaha, NE 68102',
+            price=75000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=False
+        )
+        
+        # Filter by price range
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        
+        # Should include visible listing
+        self.assertIn('Visible 75k St, Omaha, NE 68102', listing_addresses)
+        # Should NOT include hidden listing
+        self.assertNotIn('Hidden 75k St, Omaha, NE 68102', listing_addresses)
+    
+    def test_price_range_filter_reset(self):
+        """Test that price range filter can be reset."""
+        # First apply a price range filter
+        response1 = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        self.assertEqual(response1.status_code, 200)
+        listings1 = response1.context['listings']
+        count_with_filter = listings1.paginator.count
+        
+        # Reset filter (no price_range parameter)
+        response2 = self.client.get(reverse('listings'))
+        self.assertEqual(response2.status_code, 200)
+        listings2 = response2.context['listings']
+        count_without_filter = listings2.paginator.count
+        
+        # Should have more listings without filter
+        self.assertGreater(count_without_filter, count_with_filter)
+        
+        # Verify selected_price_range is None when no filter is applied
+        self.assertIsNone(response2.context.get('selected_price_range'))
+    
+    def test_price_range_filter_with_other_filters(self):
+        """Test that price range filter works with other filters."""
+        # Create listings in different price ranges and neighborhoods
+        listing_75k_downtown = Listing.objects.create(
+            address='75k Downtown St, Omaha, NE 68102',
+            price=75000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_75k_midtown = Listing.objects.create(
+            address='75k Midtown St, Omaha, NE 68103',
+            price=75000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_midtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        listing_125k_downtown = Listing.objects.create(
+            address='125k Downtown St, Omaha, NE 68102',
+            price=125000,
+            created_by=self.user,
+            neighborhood=self.neighborhood_downtown,
+            property_type=self.property_type_house,
+            status='Available',
+            status_id=self.status_active,
+            is_visible=True
+        )
+        
+        # Filter by price range AND neighborhood
+        response = self.client.get(reverse('listings'), {
+            'price_range': self.pricebucket_50_100k.pk,
+            'neighborhood': self.neighborhood_downtown.pk
+        })
+        self.assertEqual(response.status_code, 200)
+        
+        listings = response.context['listings']
+        listing_addresses = [listing.address for listing in listings]
+        
+        # Should include 75k downtown (matches both filters)
+        self.assertIn('75k Downtown St, Omaha, NE 68102', listing_addresses)
+        # Should NOT include 75k midtown (wrong neighborhood)
+        self.assertNotIn('75k Midtown St, Omaha, NE 68103', listing_addresses)
+        # Should NOT include 125k downtown (wrong price range)
+        self.assertNotIn('125k Downtown St, Omaha, NE 68102', listing_addresses)
+        
+        # Verify all listings match both filters
+        for listing in listings:
+            self.assertEqual(listing.neighborhood, self.neighborhood_downtown)
+            self.assertGreaterEqual(float(listing.price), 50000)
+            self.assertLess(float(listing.price), 100000)
+    
+    def test_price_range_search_logging(self):
+        """Test that price range searches are logged to SearchLog."""
+        initial_log_count = SearchLog.objects.count()
+        
+        # Perform a price range search
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify a search log entry was created
+        new_log_count = SearchLog.objects.count()
+        self.assertEqual(new_log_count, initial_log_count + 1)
+        
+        # Verify the log entry has correct pricebucket
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.pricebucket, self.pricebucket_50_100k)
+        self.assertIsNotNone(latest_log.timestamp)
+    
+    def test_price_range_search_logging_with_multiple_filters(self):
+        """Test that SearchLog captures all filter parameters."""
+        # Perform a search with price range, neighborhood, and property type
+        response = self.client.get(reverse('listings'), {
+            'price_range': self.pricebucket_100_150k.pk,
+            'neighborhood': self.neighborhood_downtown.pk,
+            'type': self.property_type_house.pk
+        })
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify the log entry captures all filters
+        latest_log = SearchLog.objects.latest('timestamp')
+        self.assertEqual(latest_log.pricebucket, self.pricebucket_100_150k)
+        self.assertEqual(latest_log.neighborhood, self.neighborhood_downtown)
+        self.assertEqual(latest_log.property_type, self.property_type_house)
+        self.assertIsNotNone(latest_log.timestamp)
+    
+    def test_price_range_filter_performance(self):
+        """Test that price range filtering performs efficiently."""
+        # Create many listings to test query performance
+        for i in range(50):
+            Listing.objects.create(
+                address=f'{i}00 Performance St, Omaha, NE 68102',
+                price=50000 + (i * 10000),  # Prices from 50k to 550k
+                created_by=self.user,
+                neighborhood=self.neighborhood_downtown,
+                property_type=self.property_type_house,
+                status='Available',
+                status_id=self.status_active,
+                is_visible=True
+            )
+        
+        # Test that filtering doesn't cause performance issues
+        import time
+        start_time = time.time()
+        response = self.client.get(reverse('listings'), {'price_range': self.pricebucket_50_100k.pk})
+        elapsed_time = time.time() - start_time
+        
+        self.assertEqual(response.status_code, 200)
+        # Query should complete in reasonable time (less than 1 second)
+        self.assertLess(elapsed_time, 1.0)
+        
+        # Verify correct filtering
+        listings = response.context['listings']
+        for listing in listings:
+            self.assertGreaterEqual(float(listing.price), 50000)
+            self.assertLess(float(listing.price), 100000)
 

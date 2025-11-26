@@ -1,0 +1,76 @@
+{% load static %}
+{% load humanize %}
+
+{% if listings %}
+<div class="listings-grid">
+    {% for item in listings %}
+    <article class="listing-card">
+        {% with first_photo=item.photos.first %}
+        {% if first_photo %}
+        <div class="listing-image-container">
+            <img src="{% url 'listing_photo' first_photo.photo_id %}" alt="{{ item.address }}" class="listing-image">
+        </div>
+        {% else %}
+        <div class="listing-image-container">
+            <img src="https://placehold.co/400x300?text=No+Image" alt="{{ item.address }}" class="listing-image">
+        </div>
+        {% endif %}
+        {% endwith %}
+        
+        <div class="listing-content">
+            <div class="listing-status">
+                {% if item.status_id %}
+                    {% if item.status_id.name == 'Active' %}
+                        <span class="status-dot status-dot-green"></span>
+                        <span class="status-text">For Sale</span>
+                    {% elif item.status_id.name == 'Pending' %}
+                        <span class="status-dot status-dot-yellow"></span>
+                        <span class="status-text">Pending</span>
+                    {% elif item.status_id.name == 'Sold' %}
+                        <span class="status-dot status-dot-red"></span>
+                        <span class="status-text">Sold</span>
+                    {% endif %}
+                {% elif item.status %}
+                    {# Fallback to status CharField if status_id is not set #}
+                    {% if item.status == 'Available' %}
+                        <span class="status-dot status-dot-green"></span>
+                        <span class="status-text">For Sale</span>
+                    {% elif item.status == 'Pending' %}
+                        <span class="status-dot status-dot-yellow"></span>
+                        <span class="status-text">Pending</span>
+                    {% elif item.status == 'Sold' %}
+                        <span class="status-dot status-dot-red"></span>
+                        <span class="status-text">Sold</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <div class="listing-price">${{ item.price|floatformat:0|intcomma }}</div>
+            
+            <div class="listing-address">{{ item.address }}</div>
+            
+            <div class="listing-type-neighborhood">
+                <span class="listing-type">{{ item.property_type.name }}</span>
+                <span class="listing-separator">•</span>
+                <span class="listing-neighborhood">{{ item.neighborhood.name }}</span>
+            </div>
+            
+            <div class="listing-details">
+                {% if item.bedrooms %}{{ item.bedrooms }} Bed{% endif %}
+                {% if item.bedrooms and item.bathrooms %} | {% endif %}
+                {% if item.bathrooms %}{{ item.bathrooms }} Bath{% endif %}
+                {% if item.square_footage %}
+                    {% if item.bedrooms or item.bathrooms %} | {% endif %}
+                    {{ item.square_footage|floatformat:0|intcomma }} Sqft
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-listings">
+    <p>No listings found.</p>
+</div>
+{% endif %}
+
