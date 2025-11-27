@@ -1,0 +1,290 @@
+[
+  {
+    "model": "listings.listing",
+    "pk": 1,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 10,
+      "pricebucket": null,
+      "address": "10206 Example Street",
+      "price": "780000",
+      "description": "Beautiful home at 10206 Example Street. Features 2 bedrooms and 1 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": true,
+      "bedrooms": 2,
+      "bathrooms": "1",
+      "square_footage": 1313,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 2,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 9,
+      "pricebucket": null,
+      "address": "2702 Example Street",
+      "price": "328000",
+      "description": "Beautiful home at 2702 Example Street. Features 2 bedrooms and 4 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": true,
+      "bedrooms": 2,
+      "bathrooms": "4",
+      "square_footage": 1772,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 3,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 3,
+      "pricebucket": null,
+      "address": "3340 Example Street",
+      "price": "731000",
+      "description": "Beautiful home at 3340 Example Street. Features 4 bedrooms and 1 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": false,
+      "bedrooms": 4,
+      "bathrooms": "1",
+      "square_footage": 1092,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 4,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 5,
+      "pricebucket": null,
+      "address": "5550 Example Street",
+      "price": "273000",
+      "description": "Beautiful home at 5550 Example Street. Features 2 bedrooms and 3 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": false,
+      "bedrooms": 2,
+      "bathrooms": "3",
+      "square_footage": 2984,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 5,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 1,
+      "pricebucket": null,
+      "address": "6317 Example Street",
+      "price": "465000",
+      "description": "Beautiful home at 6317 Example Street. Features 3 bedrooms and 2 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": true,
+      "bedrooms": 3,
+      "bathrooms": "2",
+      "square_footage": 2758,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.listing",
+    "pk": 6,
+    "fields": {
+      "created_by": 1,
+      "property_type": 1,
+      "neighborhood": 9,
+      "pricebucket": null,
+      "address": "7914 Example Street",
+      "price": "215000",
+      "description": "Beautiful home at 7914 Example Street. Features 2 bedrooms and 3 bathrooms.",
+      "status_id": 1,
+      "is_visible": true,
+      "is_featured": true,
+      "bedrooms": 2,
+      "bathrooms": "3",
+      "square_footage": 1440,
+      "status": "Available",
+      "listed_date": "2023-01-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 1,
+    "fields": {
+      "listing": 1,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 2,
+    "fields": {
+      "listing": 1,
+      "image_data": null,
+      "photo_display_order": 2
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 3,
+    "fields": {
+      "listing": 1,
+      "image_data": null,
+      "photo_display_order": 3
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 4,
+    "fields": {
+      "listing": 1,
+      "image_data": null,
+      "photo_display_order": 4
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 5,
+    "fields": {
+      "listing": 2,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 6,
+    "fields": {
+      "listing": 3,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 7,
+    "fields": {
+      "listing": 3,
+      "image_data": null,
+      "photo_display_order": 2
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 8,
+    "fields": {
+      "listing": 3,
+      "image_data": null,
+      "photo_display_order": 3
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 9,
+    "fields": {
+      "listing": 3,
+      "image_data": null,
+      "photo_display_order": 4
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 10,
+    "fields": {
+      "listing": 4,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 11,
+    "fields": {
+      "listing": 4,
+      "image_data": null,
+      "photo_display_order": 2
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 12,
+    "fields": {
+      "listing": 4,
+      "image_data": null,
+      "photo_display_order": 3
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 13,
+    "fields": {
+      "listing": 4,
+      "image_data": null,
+      "photo_display_order": 4
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 14,
+    "fields": {
+      "listing": 5,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 15,
+    "fields": {
+      "listing": 5,
+      "image_data": null,
+      "photo_display_order": 2
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 16,
+    "fields": {
+      "listing": 5,
+      "image_data": null,
+      "photo_display_order": 3
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 17,
+    "fields": {
+      "listing": 5,
+      "image_data": null,
+      "photo_display_order": 4
+    }
+  },
+  {
+    "model": "listings.photo",
+    "pk": 18,
+    "fields": {
+      "listing": 6,
+      "image_data": null,
+      "photo_display_order": 1
+    }
+  }
+]

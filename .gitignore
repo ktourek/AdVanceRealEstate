@@ -61,12 +61,8 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Large fixture files (exceed GitHub 50MB limit)
-listings/fixtures/listings.json
-
 # Fixture images (large binary files should not be committed)
 listings/fixtures/images/*.png
-listings/fixtures/images/*.jpg
 listings/fixtures/images/*.jpeg
 listings/fixtures/images/*.gif
 

@@ -1,14 +1,9 @@
 """
-Custom management command to load listings fixtures and attach image data
-from files extracted by `listings/fixtures/extract_images.py`.
+Custom management command to load listings fixtures and attach image data.
 
 Typical workflow:
 
-1. (One-time) Extract embedded images from the large fixture:
-
-       python -m listings.fixtures.extract_images
-
-2. Load fixtures and hydrate Photo.image_data from files:
+1. Load fixtures and hydrate Photo.image_data from files:
 
        python manage.py load_listings_with_images
 
@@ -19,8 +14,7 @@ This command:
         photo_<photo_id>.(png|jpg|jpeg|gif)
     in `listings/fixtures/images/` and writes its bytes into `image_data`.
 
-Image files are not committed to source control; they are ignored via `.gitignore`.
-Only the (now smaller) `listings/fixtures/listings.json` should be tracked.
+Image files (compressed) are committed to source control.
 """
 
 from __future__ import annotations
@@ -90,7 +84,7 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.WARNING(
                         f"No image file found for Photo {photo.photo_id} "
-                        f"(looked for photo_{photo.photo_id}.* or ISQA8210-Images/Listings/*)"
+                        f"(looked for photo_{photo.photo_id}.*)"
                     )
                 )
                 continue
@@ -120,6 +114,11 @@ class Command(BaseCommand):
         """
         try:
             original_bytes = image_path.read_bytes()
+            
+            # If the image is already small enough, use it as is
+            if len(original_bytes) <= 60 * 1024:
+                return original_bytes
+
             with Image.open(io.BytesIO(original_bytes)) as img:
                 img = img.convert("RGB")
                 # Downscale images to a maximum dimension to keep size small
@@ -146,41 +145,11 @@ class Command(BaseCommand):
         """
         photo_id = photo.photo_id
 
-        # 1) First, look for files named photo_<id>.* in the root images dir
+        # Look for files named photo_<id>.* in the root images dir
         for ext in (".png", ".jpg", ".jpeg", ".gif"):
             candidate = images_dir / f"photo_{photo_id}{ext}"
             if candidate.exists():
                 return candidate
-
-        # 2) Fallback: use the ISQA8210-Images.zip directory structure.
-        #    We derive the house number from the listing address and the
-        #    photo_display_order to pick the correct image, e.g.:
-        #      ISQA8210-Images/Listings/6317/6317-1.png
-        try:
-            address = (photo.listing.address or "").strip()
-        except Exception:
-            address = ""
-
-        if address:
-            house_num = address.split()[0]
-        else:
-            house_num = ""
-
-        if house_num:
-            listings_root = images_dir / "ISQA8210-Images" / "Listings" / house_num
-            order = photo.photo_display_order or 1
-
-            # Try numbered files like 6317-1.png, 6317-2.png, etc.
-            for ext in (".png", ".jpg", ".jpeg", ".gif"):
-                candidate = listings_root / f"{house_num}-{order}{ext}"
-                if candidate.exists():
-                    return candidate
-
-            # Some listings may only have a single image like 7914.png
-            for ext in (".png", ".jpg", ".jpeg", ".gif"):
-                candidate = listings_root / f"{house_num}{ext}"
-                if candidate.exists():
-                    return candidate
 
         return None
 
