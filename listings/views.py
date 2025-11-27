@@ -10,6 +10,7 @@ from decimal import Decimal
 import re
 from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog, OmahaLocation
 from .forms import ListingForm, OmahaLocationForm
+from django.urls import reverse
 
 
 def home(request):
@@ -385,5 +386,164 @@ def delete_omaha_location(request, location_id):
         return redirect('manage_omaha')
         
     return render(request, 'listings/omaha_delete_confirm.html', {'location': location})
+
+
+
+
+@login_required
+def generate_report(request):
+    """View for generating monthly search reports."""
+    from django.db.models import Count
+    from datetime import datetime
+    
+    report_data = None
+    selected_month = None
+    selected_year = None
+    
+    if request.method == 'GET' and 'month' in request.GET and 'year' in request.GET:
+        try:
+            selected_month = int(request.GET.get('month'))
+            selected_year = int(request.GET.get('year'))
+            
+            # Filter search logs for the selected month/year
+            search_logs = SearchLog.objects.filter(
+                timestamp__month=selected_month,
+                timestamp__year=selected_year
+            )
+            
+            # Aggregate by property type
+            property_type_counts = search_logs.filter(
+                property_type__isnull=False
+            ).values(
+                'property_type__name'
+            ).annotate(
+                search_count=Count('search_log_id')
+            ).order_by('-search_count')
+            
+            # Aggregate by neighborhood
+            neighborhood_counts = search_logs.filter(
+                neighborhood__isnull=False
+            ).values(
+                'neighborhood__name'
+            ).annotate(
+                search_count=Count('search_log_id')
+            ).order_by('-search_count')
+            
+            # Aggregate by price range
+            price_range_counts = search_logs.filter(
+                pricebucket__isnull=False
+            ).values(
+                'pricebucket__range'
+            ).annotate(
+                search_count=Count('search_log_id')
+            ).order_by('-search_count')
+            
+            report_data = {
+                'property_types': list(property_type_counts),
+                'neighborhoods': list(neighborhood_counts),
+                'price_ranges': list(price_range_counts),
+                'month': datetime(selected_year, selected_month, 1).strftime('%B'),
+                'year': selected_year,
+            }
+        except (ValueError, TypeError):
+            pass
+    
+    # Generate month and year options
+    current_year = timezone.now().year
+    months = [
+        (1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'),
+        (5, 'May'), (6, 'June'), (7, 'July'), (8, 'August'),
+        (9, 'September'), (10, 'October'), (11, 'November'), (12, 'December')
+    ]
+    years = range(current_year - 5, current_year + 1)
+    
+    context = {
+        'report_data': report_data,
+        'months': months,
+        'years': years,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
+    }
+    
+    return render(request, 'listings/generate_report.html', context)
+
+
+@login_required
+def export_report_csv(request):
+    """Export the search report as CSV."""
+    import csv
+    from django.db.models import Count
+    from datetime import datetime
+    from django.contrib import messages
+    
+    if 'month' not in request.GET or 'year' not in request.GET:
+        messages.error(request, "Missing month or year parameter.")
+        return redirect('generate_report')
+    
+    try:
+        selected_month = int(request.GET.get('month'))
+        selected_year = int(request.GET.get('year'))
+    except (ValueError, TypeError):
+        messages.error(request, "Invalid month or year parameter.")
+        return redirect('generate_report')
+    
+    # Filter search logs for the selected month/year
+    search_logs = SearchLog.objects.filter(
+        timestamp__month=selected_month,
+        timestamp__year=selected_year
+    )
+    
+    # Aggregate data
+    property_type_counts = search_logs.filter(
+        property_type__isnull=False
+    ).values('property_type__name').annotate(
+        search_count=Count('search_log_id')
+    ).order_by('-search_count')
+    
+    neighborhood_counts = search_logs.filter(
+        neighborhood__isnull=False
+    ).values('neighborhood__name').annotate(
+        search_count=Count('search_log_id')
+    ).order_by('-search_count')
+    
+    price_range_counts = search_logs.filter(
+        pricebucket__isnull=False
+    ).values('pricebucket__range').annotate(
+        search_count=Count('search_log_id')
+    ).order_by('-search_count')
+    
+    # Check if there's any data to export
+    if not property_type_counts and not neighborhood_counts and not price_range_counts:
+        month_name = datetime(selected_year, selected_month, 1).strftime('%B')
+        messages.warning(request, f"No search data available for {month_name} {selected_year} to create a report.")
+        return redirect(f"{reverse('generate_report')}?month={selected_month}&year={selected_year}")
+    
+    # Create CSV response
+    month_name = datetime(selected_year, selected_month, 1).strftime('%B')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="search_report_{month_name}_{selected_year}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow([f'Search Report for {month_name} {selected_year}'])
+    writer.writerow([])
+    
+    # Write property type data
+    writer.writerow(['Home Type', 'Searches'])
+    for item in property_type_counts:
+        writer.writerow([item['property_type__name'], item['search_count']])
+    writer.writerow([])
+    
+    # Write neighborhood data
+    writer.writerow(['Neighborhood', 'Searches'])
+    for item in neighborhood_counts:
+        writer.writerow([item['neighborhood__name'], item['search_count']])
+    writer.writerow([])
+    
+    # Write price range data
+    writer.writerow(['Price Range', 'Searches'])
+    for item in price_range_counts:
+        writer.writerow([item['pricebucket__range'], item['search_count']])
+    
+    return response
 
 

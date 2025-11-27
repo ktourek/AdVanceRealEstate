@@ -27,6 +27,11 @@ urlpatterns = [
     path('omaha/edit/<int:location_id>/', views.edit_omaha_location, name='edit_omaha_location'),
     path('omaha/delete/<int:location_id>/', views.delete_omaha_location, name='delete_omaha_location'),
     
+    # Report Generation URLs
+    path('report/', views.generate_report, name='generate_report'),
+    path('report/export/', views.export_report_csv, name='export_report_csv'),
+    
     # User registration removed - users are managed by admin in Django admin interface
 ]
+
 
