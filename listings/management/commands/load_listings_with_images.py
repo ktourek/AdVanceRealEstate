@@ -91,12 +91,18 @@ class Command(BaseCommand):
 
             # Compress image bytes before storing to the database to keep the
             # overall fixture/data size manageable.
-            photo.image_data = self._compress_image(image_path)
-            photo.save(update_fields=["image_data"])
+            compressed_image = self._compress_image(image_path)
+            photo.image_data = compressed_image
+            
+            # Generate thumbnail
+            from listings.image_utils import generate_thumbnail
+            photo.thumbnail_data = generate_thumbnail(compressed_image)
+            
+            photo.save(update_fields=["image_data", "thumbnail_data"])
             updated += 1
 
         self.stdout.write(
-            self.style.SUCCESS(f"Updated {updated} Photo records with image data.")
+            self.style.SUCCESS(f"Updated {updated} Photo records with image data and thumbnails.")
         )
         if missing:
             self.stdout.write(

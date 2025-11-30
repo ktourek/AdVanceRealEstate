@@ -234,6 +234,8 @@ def parse_price_range(range_str):
 @login_required
 def add_listing(request):
     """View to add a new property listing."""
+    from .image_utils import generate_thumbnail, compress_image
+    
     if request.method == 'POST':
         form = ListingForm(request.POST, request.FILES)
         if form.is_valid():
@@ -260,12 +262,21 @@ def add_listing(request):
             
             listing.save()
             
-            # Handle photos
+            # Handle photos with thumbnail generation
             photos = request.FILES.getlist('photos')
             for i, photo_file in enumerate(photos):
+                image_data = photo_file.read()
+                
+                # Compress the original image if needed
+                compressed_image = compress_image(image_data)
+                
+                # Generate thumbnail
+                thumbnail = generate_thumbnail(image_data)
+                
                 Photo.objects.create(
                     listing=listing,
-                    image_data=photo_file.read(),
+                    image_data=compressed_image,
+                    thumbnail_data=thumbnail,
                     photo_display_order=i+1
                 )
             
@@ -301,6 +312,33 @@ def listing_photo(request, photo_id):
         response = HttpResponse(photo.image_data, content_type=content_type)
         response['Cache-Control'] = 'public, max-age=31536000'  # Cache for 1 year
         return response
+    return HttpResponse(status=404)
+
+
+def listing_photo_thumbnail(request, photo_id):
+    """View to serve listing photo thumbnails from binary data."""
+    from .image_utils import generate_thumbnail
+    
+    photo = get_object_or_404(Photo, pk=photo_id)
+    
+    # Try to serve existing thumbnail first
+    if photo.thumbnail_data:
+        response = HttpResponse(photo.thumbnail_data, content_type='image/jpeg')
+        response['Cache-Control'] = 'public, max-age=31536000'  # Cache for 1 year
+        return response
+    
+    # If no thumbnail exists, generate one on-the-fly and save it
+    if photo.image_data:
+        thumbnail = generate_thumbnail(photo.image_data)
+        if thumbnail:
+            # Save the thumbnail for future requests
+            photo.thumbnail_data = thumbnail
+            photo.save(update_fields=['thumbnail_data'])
+            
+            response = HttpResponse(thumbnail, content_type='image/jpeg')
+            response['Cache-Control'] = 'public, max-age=31536000'  # Cache for 1 year
+            return response
+    
     return HttpResponse(status=404)
 
 

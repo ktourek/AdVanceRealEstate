@@ -216,6 +216,7 @@ class Photo(models.Model):
         related_name='photos'
     )
     image_data = models.BinaryField(null=True, blank=True, db_column='Image_Data')
+    thumbnail_data = models.BinaryField(null=True, blank=True, db_column='Thumbnail_Data')
     photo_display_order = models.IntegerField(
         null=True,
         blank=True,
