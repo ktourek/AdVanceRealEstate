@@ -41,14 +41,22 @@ def all_listings(request):
         if not is_ajax and 'HTTP_X_REQUESTED_WITH' in request.META:
             is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     
-    # Start with all visible listings
-    listings = Listing.objects.filter(is_visible=True).prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
+    # Start with all listings
+    # - logged-in users can see ALL listings
+    # - public users only see visible ones
+    if request.user.is_authenticated:
+        listings = Listing.objects.all()
+    else:
+        listings = Listing.objects.filter(is_visible=True)
+
+    listings = listings.prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
     
     # Apply filters from query parameters
     neighborhood_id = request.GET.get('neighborhood', '').strip()
     property_type_id = request.GET.get('type', '').strip()
     price_sort = request.GET.get('price', '').strip()
     price_range_id = request.GET.get('price_range', '').strip()
+    visibility = request.GET.get('visibility', '').strip()
     
     # Track if we need to log the search
     should_log_search = False
@@ -107,6 +115,13 @@ def all_listings(request):
         listings = listings.order_by('-price')
     else:
         listings = listings.order_by('-listed_date')
+
+    # Apply visibility filter (users only)
+    if request.user.is_authenticated:
+        if visibility == 'visible':
+            listings = listings.filter(is_visible=True)
+        elif visibility == 'hidden':
+            listings = listings.filter(is_visible=False)
     
     # Log the search if any filter was applied
     if should_log_search:
@@ -159,6 +174,7 @@ def all_listings(request):
         'selected_type': selected_type,
         'selected_price': price_sort or '',
         'selected_price_range': selected_price_range,
+        'selected_visibility': visibility or '',
     }
     
     # Return JSON response if this is an AJAX request
@@ -172,6 +188,7 @@ def all_listings(request):
                 'selected_price_range': selected_price_range,
                 'selected_neighborhood': selected_neighborhood,
                 'selected_type': selected_type,
+                'selected_visibility': visibility or '',
             }, request=request)
             
             response = JsonResponse({
@@ -286,6 +303,28 @@ def add_listing(request):
     
     return render(request, 'listings/add_listing.html', {'form': form})
 
+@login_required
+def toggle_listing_visibility(request, listing_id):
+    listing = get_object_or_404(Listing, pk=listing_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('visibility')
+        if action == 'hide':
+            listing.is_visible = False
+        elif action == 'show':
+            listing.is_visible = True
+        else:
+            listing.is_visible = not listing.is_visible
+        listing.save()
+
+        # keep filters when changing visibility
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('listings')
+
+    context = {'listing': listing}
+    return render(request, 'listings/toggle_listing_visibility.html', context)
 
 def custom_logout(request):
     """Custom logout view that renders the logout page."""

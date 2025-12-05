@@ -8,10 +8,11 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('home/', views.home, name='home_alias'),
     path('listings/', views.all_listings, name='listings'),
-    path('omaha/', views.omaha, name='omaha'),
     path('add-listing/', views.add_listing, name='add_listing'),
+    path('listings/<int:listing_id>/toggle-visibility/',views.toggle_listing_visibility, name='toggle_visibility'),
     path('photo/<int:photo_id>/', views.listing_photo, name='listing_photo'),
     path('photo/<int:photo_id>/thumbnail/', views.listing_photo_thumbnail, name='listing_photo_thumbnail'),
+
     path(
         'login/',
         auth_views.LoginView.as_view(
@@ -21,7 +22,8 @@ urlpatterns = [
         name='login'
     ),
     path('logout/', views.custom_logout, name='logout'),
-    
+
+    path('omaha/', views.omaha, name='omaha'),
     # Omaha Management URLs
     path('omaha/manage/', views.manage_omaha, name='manage_omaha'),
     path('omaha/add/', views.add_omaha_location, name='add_omaha_location'),
