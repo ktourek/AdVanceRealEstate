@@ -63,7 +63,23 @@ class MultipleFileField(forms.FileField):
                 return None
             return [single_file_clean]
 
+class FeaturedListingForm(forms.Form):
+    listing = forms.ModelChoiceField(
+        queryset=Listing.objects.filter(is_visible=True),
+        required=False,
+        label='Choose a Property',
+        empty_label='Select a property',
+    )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['listing'].queryset = (
+            Listing.objects
+            .filter(is_visible=True)
+            .exclude(status__iexact='Sold')
+            .order_by('address')
+        )
 class ListingForm(forms.ModelForm):
     """Form for creating new property listings."""
     photos = MultipleFileField(

@@ -5,6 +5,40 @@
 <div class="home-layout">
     <!-- Top Row: Featured Home -->
     <section class="featured-row">
+        {% if user.is_authenticated %}
+        <div class="featured-menu-wrapper">
+            {# CASE 1: Featured listing is SOLD → red ! link, direct redirect #}
+            {% if is_featured_sold %}
+                <a href="{% url 'featured_listing_update' %}"
+                   class="featured-alert-button"
+                   title="Your featured property is marked as Sold. Select a new featured listing.">
+                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                    <span class="sr-only">Featured property is sold – update featured listing</span>
+                </a>
+
+            {# CASE 2: Normal → three-dot menu with dropdown #}
+            {% else %}
+                <div class="featured-menu">
+                    <button class="featured-menu-button"
+                            type="button"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            title="More actions">
+                        <i class="bi bi-three-dots" aria-hidden="true"></i>
+                        <span class="sr-only">More actions</span>
+                    </button>
+
+                    <div class="featured-menu-dropdown">
+                        <a href="{% url 'featured_listing_update' %}" class="featured-menu-item">
+                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                            <span>Update</span>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="featured-image-container">
             {% if featured_listing and featured_listing.photos.first %}
                 <img src="https://placehold.co/800x600?text=Featured+Home" alt="{{ featured_listing.address }}">
@@ -12,6 +46,7 @@
                 <img src="https://placehold.co/800x600?text=Featured+Home" alt="Featured Home">
             {% endif %}
         </div>
+
         <div class="featured-text-container">
             <h2 class="featured-title">Featured Home of the Week!</h2>
             {% if featured_listing %}
@@ -33,14 +68,100 @@
     <section class="welcome-row">
         <h1 class="welcome-main-title">Welcome to AdVance Home Real Estate!</h1>
         <h2 class="welcome-sub-title">Local expertise you can trust.</h2>
-        
+
         <p class="welcome-paragraph">
             At AdVance Home Real Estate, we help you move forward with confidence. Whether you're searching for a place to call home or simply exploring the Omaha real estate market, Madison Vance is here to guide you every step of the way. With years of experience and a deep understanding of Omaha's neighborhoods, Madison is dedicated to helping you find the home that's right for you.
         </p>
-        
+
         <div class="welcome-logo-bottom">
             <img src="{% static 'images/logo.png' %}" alt="AdVance Real Estate">
         </div>
     </section>
 </div>
+
+<style>
+.featured-menu-wrapper {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 10;
+}
+
+.featured-menu {
+    position: relative;
+    display: inline-block;
+}
+
+/* red ! link when sold */
+.featured-alert-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #d93025; /* red */
+    text-decoration: none;
+    padding: 0.25rem 0.4rem;
+    cursor: pointer;
+}
+
+/* three-dot menu button when not sold */
+.featured-menu-button {
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+}
+
+.featured-menu-button .bi-three-dots {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+/* dropdown */
+.featured-menu-dropdown {
+    position: absolute;
+    right: 0;
+    margin-top: 0.4rem;
+    background: #ffffff;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    display: none;
+}
+
+.featured-menu-dropdown.is-open {
+    display: block;
+}
+
+/* dropdown item + icon */
+.featured-menu-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.featured-menu-item .bi {
+    font-size: 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const button = document.querySelector('.featured-menu-button');
+    const dropdown = document.querySelector('.featured-menu-dropdown');
+
+    if (!button || !dropdown) return;  // sold case → no menu, nothing to wire up
+
+    button.addEventListener('click', function (event) {
+        event.stopPropagation();
+        dropdown.classList.toggle('is-open');
+    });
+
+    document.addEventListener('click', function () {
+        dropdown.classList.remove('is-open');
+    });
+});
+</script>
 {% endblock %}

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-layout featured-update-page">
+    <section class="featured-update-row">
+        <h1 class="page-title">Update Featured Property</h1>
+        <p class="page-subtitle">
+            As Madison, you can select one of your active listings to be highlighted
+            on the homepage as the Featured Property. Once saved, the homepage updates
+            instantly.
+        </p>
+
+        <div class="featured-update-card">
+            <h2 class="section-title">Select a Featured Listing</h2>
+
+            <form method="post" class="featured-update-form">
+                {% csrf_token %}
+
+                <!-- Choose a Property -->
+                <div class="form-field">
+                    <label for="{{ form.listing.id_for_label }}">Choose a Property</label>
+                    <div class="select-wrapper">
+                        {{ form.listing }}
+                    </div>
+                    {% if form.listing.errors %}
+                        <div class="form-error">
+                            {{ form.listing.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+
+            {% if current_featured %}
+                <p class="current-featured-info">
+                    Currently featured: <strong>{{ current_featured.address }}</strong>
+                </p>
+            {% else %}
+                <p class="current-featured-info">
+                    No listing is currently featured.
+                </p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+/* --- Page layout --- */
+.featured-update-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+}
+
+.featured-update-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- Header --- */
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.3rem;
+}
+
+.page-subtitle {
+    max-width: 700px;
+    margin: 0 auto 2.3rem;
+    text-align: center;
+    font-size: 0.98rem;
+    color: #666666;
+}
+
+/* --- Card --- */
+.featured-update-card {
+    width: 100%;
+    max-width: 1000px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2.25rem 2.75rem 2.1rem;
+    border: 1px solid #e2e2e2;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.75rem;
+}
+
+/* --- Form --- */
+.featured-update-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Select */
+.select-wrapper select {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid #d4d4d4;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background-color: #fafafa;
+
+    appearance: none;              /* remove native chevron */
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #555 50%),
+        linear-gradient(135deg, #555 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+}
+
+/* Focus state */
+.select-wrapper select:focus {
+    outline: none;
+    border-color: #7a8f6b;
+    box-shadow: 0 0 0 3px rgba(122, 143, 107, 0.18);
+    background-color: #ffffff;
+}
+
+/* Errors */
+.form-error {
+    font-size: 0.82rem;
+    color: #b3261e;
+}
+
+/* --- Buttons --- */
+.form-actions {
+    margin-top: 1.75rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.45rem 1.7rem;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Green Save button */
+.btn-primary {
+    background-color: #8a9c78;   /* tweak to match your header green */
+    border-color: #8a9c78;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(138, 156, 120, 0.4);
+}
+
+.btn-primary:hover {
+    background-color: #7a8c6a;
+    border-color: #7a8c6a;
+}
+
+/* White Cancel button */
+.btn-secondary {
+    background-color: #ffffff;
+    color: #333333;
+    border-color: #333333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-secondary:hover {
+    background-color: #f5f5f5;
+}
+
+/* --- Current featured text --- */
+.current-featured-info {
+    margin-top: 1.4rem;
+    font-size: 0.9rem;
+    color: #666666;
+}
+</style>
+
+{% endblock %}

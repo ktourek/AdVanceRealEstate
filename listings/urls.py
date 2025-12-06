@@ -7,6 +7,7 @@ from .forms import CustomLoginForm
 urlpatterns = [
     path('', views.home, name='home'),
     path('home/', views.home, name='home_alias'),
+    path('featured/update/', views.update_featured_listing, name='featured_listing_update'),
     path('listings/', views.all_listings, name='listings'),
     path('add-listing/', views.add_listing, name='add_listing'),
     path('listings/<int:listing_id>/toggle-visibility/',views.toggle_listing_visibility, name='toggle_visibility'),

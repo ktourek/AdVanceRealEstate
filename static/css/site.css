@@ -29,6 +29,7 @@ header {
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 999;
 }
 
 .header-logo-row {
@@ -311,6 +312,7 @@ input[type="text"], input[type="password"], input[type="number"], textarea, sele
     display: flex;
     background: #fff;
     overflow: hidden;
+    position: relative;
 }
 
 .featured-image-container {

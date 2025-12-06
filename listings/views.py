@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from decimal import Decimal
 import re
 from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog, OmahaLocation
-from .forms import ListingForm, OmahaLocationForm
+from .forms import ListingForm, OmahaLocationForm, FeaturedListingForm
 from django.urls import reverse
 
 
@@ -17,12 +17,49 @@ def home(request):
     """Public homepage showing featured listing and welcome message."""
     # Get the featured listing
     featured_listing = Listing.objects.filter(is_visible=True, is_featured=True).first()
-    
+
+    is_featured_sold = False
+    if request.user.is_authenticated and featured_listing:
+        status_str = str(getattr(featured_listing, 'status', '') or '')
+        is_featured_sold = status_str == 'Sold'
+
     context = {
         'featured_listing': featured_listing,
+        'is_featured_sold': is_featured_sold,
     }
     return render(request, 'listings/home.html', context)
 
+@login_required
+def update_featured_listing(request):
+    """Allow Madison to choose which listing is marked as featured."""
+    # current featured listing (if any)
+    current_featured = Listing.objects.filter(is_featured=True).first()
+
+    if request.method == "POST":
+        form = FeaturedListingForm(request.POST)
+        if form.is_valid():
+            new_featured = form.cleaned_data["listing"]
+
+            # 1) Clear all featured flags
+            Listing.objects.update(is_featured=False)
+
+            # 2) Set the chosen one (if any) as featured
+            if new_featured:
+                new_featured.is_featured = True
+                new_featured.save()
+
+            #messages.success(request, "Featured property updated.")
+            return redirect("home")  # or your landing-page URL name
+    else:
+        form = FeaturedListingForm(
+            initial={"listing": current_featured} if current_featured else None
+        )
+
+    context = {
+        "form": form,
+        "current_featured": current_featured,
+    }
+    return render(request, "listings/update_featured_listing.html", context)
 
 def all_listings(request):
     """Page showing all available listings with filtering and pagination."""
