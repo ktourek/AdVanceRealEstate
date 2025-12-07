@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import (
     User, Status, PropertyType, Neighborhood, Pricebucket,
-    Listing, Photo, SearchLog, OmahaResource
+    Listing, Photo, SearchLog, OmahaResource, OmahaLocation
 )
 
 
@@ -120,3 +120,25 @@ class OmahaResourceAdmin(admin.ModelAdmin):
             'fields': ('user', 'is_published')
         }),
     )
+
+
+@admin.register(OmahaLocation)
+class OmahaLocationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'display_order', 'is_published', 'created_by', 'created_date']
+    list_filter = ['category', 'is_published', 'created_by', 'created_date']
+    search_fields = ['name', 'description']
+    readonly_fields = ['created_date', 'updated_date']
+    list_editable = ['display_order', 'is_published']
+    ordering = ['category', 'display_order', 'name']
+    fieldsets = (
+        ('Location Information', {
+            'fields': ('name', 'description', 'url', 'category')
+        }),
+        ('Display Settings', {
+            'fields': ('display_order', 'is_published')
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_date', 'updated_date')
+        }),
+    )
+

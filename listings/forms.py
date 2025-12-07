@@ -65,7 +65,23 @@ class MultipleFileField(forms.FileField):
                 return None
             return [single_file_clean]
 
+class FeaturedListingForm(forms.Form):
+    listing = forms.ModelChoiceField(
+        queryset=Listing.objects.filter(is_visible=True),
+        required=False,
+        label='Choose a Property',
+        empty_label='Select a property',
+    )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['listing'].queryset = (
+            Listing.objects
+            .filter(is_visible=True)
+            .exclude(status__iexact='Sold')
+            .order_by('address')
+        )
 class ListingForm(forms.ModelForm):
     """Form for creating new property listings."""
     photos = MultipleFileField(
@@ -149,29 +165,3 @@ class OmahaLocationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['category'].empty_label = 'Select a Category'
-
-
-class ContactForm(forms.Form):
-    name = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Your Name',
-            'id': 'name',
-            'class': 'contact-input'
-        })
-    )
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'placeholder': 'Your Email',
-            'id': 'email',
-            'class': 'contact-input'
-        })
-    )
-    message = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'placeholder': 'Your Message',
-            'id': 'message',
-            'rows': 5,
-            'class': 'contact-input'
-        })
-    )

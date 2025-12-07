@@ -8,26 +8,58 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from decimal import Decimal
 import re
-import logging
-from django.core.mail import send_mail
 from .models import Listing, Photo, Neighborhood, PropertyType, Status, Pricebucket, SearchLog, OmahaLocation
-from .forms import ListingForm, OmahaLocationForm, ContactForm
+from .forms import ListingForm, OmahaLocationForm, FeaturedListingForm
 from django.urls import reverse
-from django.conf import settings
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_http_methods
+
 
 def home(request):
-    featured_listing = Listing.objects.filter(is_featured=True).first()
-    return render(request, 'home.html', {'featured_listing': featured_listing})
+    """Public homepage showing featured listing and welcome message."""
+    # Get the featured listing
+    featured_listing = Listing.objects.filter(is_visible=True, is_featured=True).first()
 
-# this is to help with the featured listing link from the home page
-def listing_detail(request, pk):
-    listing = Listing.objects.get(pk=pk, is_visible=True)
-    context = {'listing': listing}
-    return render(request, 'listing_detail.html', context)
+    is_featured_sold = False
+    if request.user.is_authenticated and featured_listing:
+        status_str = str(getattr(featured_listing, 'status', '') or '')
+        is_featured_sold = status_str == 'Sold'
 
+    context = {
+        'featured_listing': featured_listing,
+        'is_featured_sold': is_featured_sold,
+    }
+    return render(request, 'listings/home.html', context)
+
+@login_required
+def update_featured_listing(request):
+    """Allow Madison to choose which listing is marked as featured."""
+    # current featured listing (if any)
+    current_featured = Listing.objects.filter(is_featured=True).first()
+
+    if request.method == "POST":
+        form = FeaturedListingForm(request.POST)
+        if form.is_valid():
+            new_featured = form.cleaned_data["listing"]
+
+            # 1) Clear all featured flags
+            Listing.objects.update(is_featured=False)
+
+            # 2) Set the chosen one (if any) as featured
+            if new_featured:
+                new_featured.is_featured = True
+                new_featured.save()
+
+            #messages.success(request, "Featured property updated.")
+            return redirect("home")  # or your landing-page URL name
+    else:
+        form = FeaturedListingForm(
+            initial={"listing": current_featured} if current_featured else None
+        )
+
+    context = {
+        "form": form,
+        "current_featured": current_featured,
+    }
+    return render(request, "listings/update_featured_listing.html", context)
 
 def all_listings(request):
     """Page showing all available listings with filtering and pagination."""
@@ -112,6 +144,13 @@ def all_listings(request):
         listings = listings.order_by('-price')
     else:
         listings = listings.order_by('-listed_date')
+
+    # Apply visibility filter (users only)
+    if request.user.is_authenticated:
+        if visibility == 'visible':
+            listings = listings.filter(is_visible=True)
+        elif visibility == 'hidden':
+            listings = listings.filter(is_visible=False)
     
     # Log the search if any filter was applied
     if should_log_search:
@@ -164,6 +203,7 @@ def all_listings(request):
         'selected_type': selected_type,
         'selected_price': price_sort or '',
         'selected_price_range': selected_price_range,
+        'selected_visibility': visibility or '',
     }
     
     # Return JSON response if this is an AJAX request
@@ -177,6 +217,7 @@ def all_listings(request):
                 'selected_price_range': selected_price_range,
                 'selected_neighborhood': selected_neighborhood,
                 'selected_type': selected_type,
+                'selected_visibility': visibility or '',
             }, request=request)
             
             response = JsonResponse({
@@ -291,6 +332,28 @@ def add_listing(request):
     
     return render(request, 'listings/add_listing.html', {'form': form})
 
+@login_required
+def toggle_listing_visibility(request, listing_id):
+    listing = get_object_or_404(Listing, pk=listing_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('visibility')
+        if action == 'hide':
+            listing.is_visible = False
+        elif action == 'show':
+            listing.is_visible = True
+        else:
+            listing.is_visible = not listing.is_visible
+        listing.save()
+
+        # keep filters when changing visibility
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('listings')
+
+    context = {'listing': listing}
+    return render(request, 'listings/toggle_listing_visibility.html', context)
 
 def custom_logout(request):
     """Custom logout view that renders the logout page."""
@@ -589,44 +652,4 @@ def export_report_csv(request):
     
     return response
 
-@csrf_protect
-@require_http_methods(["GET", "POST"])
-def about_view(request):
-    if request.method == "POST":
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            message = form.cleaned_data['message']
 
-            subject = f"New Contact Form Submission from {name}"
-            body = f"""
-            You have a new message from your website contact form:
-
-            Name: {name}
-            Email: {email}
-            Message:
-            {message}
-            """
-
-            try:
-                send_mail(
-                    subject=subject,
-                    message=body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[settings.CONTACT_EMAIL],
-                    fail_silently=False,
-                )
-                messages.success(request, "Thank you! Your message has been sent successfully.")
-                return redirect('about')
-            except Exception as e:
-                logger.exception("Error sending contact form email")
-                messages.error(request, "Sorry, there was an error sending your message. Please try again later.")
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = ContactForm()
-
-    return render(request, 'about.html', {
-        'form': form
-    })

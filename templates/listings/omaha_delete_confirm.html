@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container delete-confirm-page">
+    <div class="delete-card">
+        <div class="icon-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1>Delete Location?</h1>
+        <p>Are you sure you want to delete <strong>"{{ location.name }}"</strong>? This action cannot be undone.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="actions">
+                <a href="{% url 'manage_omaha' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-delete">Delete Location</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.delete-confirm-page {
+    padding: 60px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+}
+
+.delete-card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.icon-warning {
+    font-size: 3rem;
+    color: #e74c3c;
+    margin-bottom: 20px;
+}
+
+.delete-card h1 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #000;
+    margin-bottom: 15px;
+}
+
+.delete-card p {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-cancel {
+    display: inline-block;
+    padding: 12px 30px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    background-color: white;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-delete {
+    display: inline-block;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 30px;
+    background-color: #e74c3c;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+@media (max-width: 480px) {
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn-cancel, .btn-delete {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

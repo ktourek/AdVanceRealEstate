@@ -1,0 +1,20 @@
+{% if listings.has_other_pages %}
+<div class="pagination-container">
+    <div class="pagination">
+        {% if listings.has_previous %}
+            <a href="?page=1{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_price_range %}&price_range={{ selected_price_range }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link" data-page="1">&laquo; First</a>
+            <a href="?page={{ listings.previous_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_price_range %}&price_range={{ selected_price_range }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link" data-page="{{ listings.previous_page_number }}">&lsaquo; Previous</a>
+        {% endif %}
+        
+        <span class="pagination-info">
+            Page {{ listings.number }} of {{ listings.paginator.num_pages }}
+        </span>
+        
+        {% if listings.has_next %}
+            <a href="?page={{ listings.next_page_number }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_price_range %}&price_range={{ selected_price_range }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link" data-page="{{ listings.next_page_number }}">Next &rsaquo;</a>
+            <a href="?page={{ listings.paginator.num_pages }}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_price_range %}&price_range={{ selected_price_range }}{% endif %}{% if selected_neighborhood %}&neighborhood={{ selected_neighborhood }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" class="pagination-link" data-page="{{ listings.paginator.num_pages }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+

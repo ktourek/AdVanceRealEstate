@@ -1,0 +1,6 @@
+#
+# This file ensures the `listings/fixtures/images/` directory
+# is kept in version control even though the image files
+# themselves are ignored via `.gitignore`.
+#
+

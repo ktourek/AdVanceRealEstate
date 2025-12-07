@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="omaha-page">
+    <div class="container">
+        <h1>Discover Omaha</h1>
+        
+        <div class="omaha-intro">
+            <p>
+                Omaha is more than just a city, it's a community full of life, flavor, and experiences. Explore what makes it a wonderful place to live, work, and play.
+            </p>
+        </div>
+
+        <div class="omaha-columns">
+            <!-- Column 1: See & Do -->
+            <div class="omaha-column">
+                <div class="column-header-image">
+                    <img src="{% static 'images/omaha-zoo.jpg' %}" alt="Things to See and Do" onerror="this.src='https://placehold.co/600x400?text=See+%26+Do'">
+                </div>
+                <h2>Things to See and Do</h2>
+                <p class="column-description">Enjoy family-friendly attractions and outdoor adventures Omaha has to offer.</p>
+                
+                <div class="location-list">
+                    {% for location in see_do_locations %}
+                    <div class="location-card" onclick="toggleDetails('details-{{ location.omaha_location_id }}')">
+                        <div class="location-title">
+                            {{ location.name }}
+                        </div>
+                        <div id="details-{{ location.omaha_location_id }}" class="location-details">
+                            <p>{{ location.description }}</p>
+                            {% if location.url %}
+                            <a href="{{ location.url }}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="no-locations">No locations added yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Column 2: Food -->
+            <div class="omaha-column">
+                <div class="column-header-image">
+                    <img src="{% static 'images/omaha-food.jpg' %}" alt="Great Places to Eat" onerror="this.src='https://placehold.co/600x400?text=Food'">
+                </div>
+                <h2>Great Places to Eat</h2>
+                <p class="column-description">Explore Omaha's growing food scene, from fine dining to local brews.</p>
+                
+                <div class="location-list">
+                    {% for location in food_locations %}
+                    <div class="location-card" onclick="toggleDetails('details-{{ location.omaha_location_id }}')">
+                        <div class="location-title">
+                            {{ location.name }}
+                        </div>
+                        <div id="details-{{ location.omaha_location_id }}" class="location-details">
+                            <p>{{ location.description }}</p>
+                            {% if location.url %}
+                            <a href="{{ location.url }}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="no-locations">No locations added yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Column 3: Events -->
+            <div class="omaha-column">
+                <div class="column-header-image">
+                    <img src="{% static 'images/omaha-events.jpg' %}" alt="Community Events" onerror="this.src='https://placehold.co/600x400?text=Events'">
+                </div>
+                <h2>Community Events</h2>
+                <p class="column-description">Experience Omaha's vibrant culture through its many community events.</p>
+                
+                <div class="location-list">
+                    {% for location in event_locations %}
+                    <div class="location-card" onclick="toggleDetails('details-{{ location.omaha_location_id }}')">
+                        <div class="location-title">
+                            {{ location.name }}
+                        </div>
+                        <div id="details-{{ location.omaha_location_id }}" class="location-details">
+                            <p>{{ location.description }}</p>
+                            {% if location.url %}
+                            <a href="{{ location.url }}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="no-locations">No locations added yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        {% if user.is_authenticated %}
+        <div class="admin-actions">
+            <a href="{% url 'manage_omaha' %}" class="btn-manage">Manage Omaha Content</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function toggleDetails(id) {
+        var details = document.getElementById(id);
+        if (details.style.display === "block") {
+            details.style.display = "none";
+        } else {
+            // Optional: Close other open details
+            // var allDetails = document.querySelectorAll('.location-details');
+            // allDetails.forEach(function(el) { el.style.display = 'none'; });
+            
+            details.style.display = "block";
+        }
+    }
+</script>
+
+<style>
+.omaha-page {
+    padding: 40px 20px;
+    background-color: #ffffff;
+}
+
+.omaha-page .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.omaha-page h1 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: #000;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.omaha-intro {
+    max-width: 900px;
+    margin: 0 auto 50px;
+    text-align: center;
+}
+
+.omaha-intro p {
+    font-family: 'Lato', sans-serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: #333;
+    line-height: 1.6;
+}
+
+.omaha-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.omaha-column {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.column-header-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.column-header-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.omaha-column h2 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #000;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.column-description {
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.location-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.location-card {
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: #fff;
+}
+
+.location-card:hover {
+    background-color: #f9f9f9;
+}
+
+.location-title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #000;
+    text-align: center;
+}
+
+.location-details {
+    display: none;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: left;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.location-details p {
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.location-details a {
+    display: inline-block;
+    color: #2c5530; /* Using the brand green */
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.location-details a:hover {
+    color: #1e3d21;
+}
+
+.no-locations {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+.admin-actions {
+    margin-top: 50px;
+    text-align: center;
+}
+
+.btn-manage {
+    display: inline-block;
+    background-color: #2c5530;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-manage:hover {
+    background-color: #1e3d21;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 992px) {
+    .omaha-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .omaha-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    .omaha-page h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
