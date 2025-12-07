@@ -78,22 +78,14 @@ def all_listings(request):
         if not is_ajax and 'HTTP_X_REQUESTED_WITH' in request.META:
             is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     
-    # Start with all listings
-    # - logged-in users can see ALL listings
-    # - public users only see visible ones
-    if request.user.is_authenticated:
-        listings = Listing.objects.all()
-    else:
-        listings = Listing.objects.filter(is_visible=True)
-
-    listings = listings.prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
+    # Start with all visible listings
+    listings = Listing.objects.filter(is_visible=True).prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
     
     # Apply filters from query parameters
     neighborhood_id = request.GET.get('neighborhood', '').strip()
     property_type_id = request.GET.get('type', '').strip()
     price_sort = request.GET.get('price', '').strip()
     price_range_id = request.GET.get('price_range', '').strip()
-    visibility = request.GET.get('visibility', '').strip()
     
     # Track if we need to log the search
     should_log_search = False
