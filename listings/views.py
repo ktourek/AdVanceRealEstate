@@ -270,9 +270,7 @@ def add_listing(request):
             listing = form.save(commit=False)
             listing.created_by = request.user
             listing.save()
-
-            form.save_photos(listing)
-            
+            form.save_photos(listing)  # This now works perfectly
             messages.success(request, "New listing added successfully!")
             return redirect('listings')
     else:

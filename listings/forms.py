@@ -3,6 +3,7 @@ from django import forms
 from django import forms
 from django.core.validators import validate_email
 from django.contrib.auth.forms import AuthenticationForm
+from django.template.base import logger
 from .models import Listing, OmahaLocation, Photo
 
 
@@ -105,11 +106,42 @@ class ListingForm(forms.ModelForm):
         self.fields['status_id'].required = True
 
     def save_photos(self, listing):
-        """Save uploaded photos to the listing."""
-        photos = self.cleaned_data.get('photos')
-        if photos:
-            for photo_file in photos:
-                Photo.objects.create(listing=listing, photo=photo_file)
+            photos = self.cleaned_data.get('photos')
+            if not photos:
+                return
+
+            for i, photo_file in enumerate(photos, start=1):
+                try:
+                    try:
+                        photo_file.seek(0)
+                    except Exception:
+                        pass
+
+                    if hasattr(Photo, 'image'):
+                        p = Photo(listing=listing)
+                        p.image.save(photo_file.name, photo_file, save=False)
+                        p.photo_display_order = i
+                        p.save()
+                        continue
+
+                    if hasattr(Photo, 'image_data'):
+                        data = photo_file.read()
+                        Photo.objects.create(listing=listing, image_data=data, photo_display_order=i)
+                        continue
+
+                    Photo.objects.create(listing=listing, photo=photo_file)
+                except Exception:
+                    logger.exception("Failed to save uploaded photo for listing %s", getattr(listing, 'pk', None))
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            try:
+                self.save_photos(instance)
+            except Exception:
+                logger.exception("Error saving photos for listing %s", getattr(instance, 'pk', None))
+        return instance
 
     def clean_photos(self):
         photos = self.cleaned_data.get('photos')
