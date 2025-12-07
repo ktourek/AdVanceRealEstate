@@ -1,3 +1,4 @@
+<!-- templates/about.html -->
 {% extends "base.html" %}
 {% load static %}
 
@@ -7,7 +8,7 @@
         <div class="about-grid">
             <!-- Left container with photo -->
             <div class="about-left">
-                <div class="about-photo">
+                <div class="about-photo-circle">
                     <img src="{% static 'img/madison_vance.png' %}" alt="Madison Vance">
                 </div>
 
@@ -25,17 +26,35 @@
             </div>
 
             <!-- Right container with contact fields -->
-            <!-- TODO set up email functionality when it is decided -->
             <div class="about-right">
                 <h2 class="contact-heading">Let's chat!</h2>
                 <p class="contact-sub">Have any questions or want more information?<br>Send me a message below, I'm happy to talk!</p>
 
-                <form class="contact-form" method="post" action="{% url 'home' %}">
+                <form method="post" class="contact-form-modern">
                     {% csrf_token %}
-                    <input type="text" name="name" placeholder="Your name" required>
-                    <input type="email" name="email" placeholder="Your email address" required>
-                    <textarea name="message" rows="5" placeholder="Your message..." required></textarea>
-                    <button type="submit" class="send-btn">Send</button>
+
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="form-message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="form-group">
+                        {{ form.name }}
+                        {% if form.name.errors %}<small class="error">{{ form.name.errors|join:", " }}</small>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.email }}
+                        {% if form.email.errors %}<small class="error">{{ form.email.errors|join:", " }}</small>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.message }}
+                        {% if form.message.errors %}<small class="error">{{ form.message.errors|join:", " }}</small>{% endif %}
+                    </div>
+
+                    <button type="submit" class="send-btn-modern">Send</button>
                 </form>
             </div>
         </div>

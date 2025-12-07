@@ -207,7 +207,6 @@ class Listing(models.Model):
 
 
 class Photo(models.Model):
-    """Photo model for listing images."""
     photo_id = models.AutoField(primary_key=True, db_column='Photo_ID')
     listing = models.ForeignKey(
         Listing,
@@ -226,7 +225,7 @@ class Photo(models.Model):
     class Meta:
         db_table = 'Photo'
         ordering = ['photo_display_order', 'photo_id']
-    
+
     def __str__(self):
         return f"Photo {self.photo_id} for {self.listing.address}"
 

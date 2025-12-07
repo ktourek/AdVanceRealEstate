@@ -1,0 +1,10 @@
+<label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+    {{ field.label }}{% if field.field.required %} <span style="color:#dc2626;">*</span>{% endif %}
+</label>
+{{ field }}
+{% if field.errors %}
+<div style="color:#dc2626; font-size:14px; margin-top:6px;">{{ field.errors }}</div>
+{% endif %}
+{% if field.help_text %}
+<small style="color:#666; display:block; margin-top:6px;">{{ field.help_text }}</small>
+{% endif %}
