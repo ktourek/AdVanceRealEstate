@@ -143,3 +143,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# This line is for development only - switch to SMTP in production
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+
+# Uncomment the block below and comment the line above when going live:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'isqaadvance@gmail.com'
+EMAIL_HOST_PASSWORD = 'ayhy wgln tumf zemq'
+DEFAULT_FROM_EMAIL = 'isqaadvance@gmail.com'
+
+# Where contact form emails are sent
+CONTACT_EMAIL = 'isqaadvance@gmail.com'
