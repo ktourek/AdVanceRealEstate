@@ -1,9 +1,9 @@
-# listings/forms.py
+﻿# listings/forms.py
 from django import forms
 from django import forms
 from django.core.validators import validate_email
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Listing, OmahaLocation
+from .models import Listing, OmahaLocation, Photo
 
 
 class CustomLoginForm(AuthenticationForm):
@@ -82,62 +82,107 @@ class FeaturedListingForm(forms.Form):
             .exclude(status__iexact='Sold')
             .order_by('address')
         )
+
 class ListingForm(forms.ModelForm):
-    """Form for creating new property listings."""
-    photos = MultipleFileField(
-        label='Upload Property Photos',
-        help_text='Please upload exactly 4 images.',
-        required=True
-    )
+    photos = MultipleFileField(label='Upload Property Photos', required=False)
 
     class Meta:
         model = Listing
-        fields = [
-            'address', 'price', 'property_type', 'neighborhood',
-            'bedrooms', 'bathrooms', 'square_footage', 'status', 'description'
-        ]
+        fields = ['address', 'price', 'property_type', 'neighborhood',
+                  'bedrooms', 'bathrooms', 'square_footage', 'description',
+                  'status_id', 'photos']
         widgets = {
-            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter address information'}),
-            'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter price'}),
-            'property_type': forms.Select(attrs={'class': 'form-control'}),
-            'neighborhood': forms.Select(attrs={'class': 'form-control'}),
-            'bedrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bedrooms'}),
-            'bathrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bathrooms'}),
-            'square_footage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter square footage'}),
-            'status': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Describe the property, features, and nearby attractions...'}),
+            'description': forms.Textarea(attrs={'rows': 4}),
+            'status_id': forms.Select(attrs={'class': 'form-control'}),
         }
         labels = {
-            'property_type': 'Home Type',
-            'square_footage': "Home's Square Footage",
-            'status': 'Listing Status',
+            'status_id': 'Listing Status',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add empty_label for ForeignKey select fields with meaningful messages
-        self.fields['property_type'].empty_label = 'Select a home type'
-        self.fields['neighborhood'].empty_label = 'Select a neighborhood'
-        
-        # For CharField with choices (status), add an empty choice at the beginning
-        self.fields['status'].choices = [('', 'Select listing status')] + list(self.fields['status'].choices)
+        self.fields['status_id'].empty_label = None
+        self.fields['status_id'].required = True
+
+    def save_photos(self, listing):
+        """Save uploaded photos to the listing."""
+        photos = self.cleaned_data.get('photos')
+        if photos:
+            for photo_file in photos:
+                Photo.objects.create(listing=listing, photo=photo_file)
 
     def clean_photos(self):
-        """Validate that exactly 4 photos are uploaded."""
         photos = self.cleaned_data.get('photos')
         
-        if not photos:
-            raise forms.ValidationError('Please upload photos.')
-            
-        if len(photos) != 4:
-            raise forms.ValidationError(f'You must upload exactly 4 photos. You uploaded {len(photos)}.')
+        if not self.instance or not self.instance.pk:
+            if not photos:
+                raise forms.ValidationError('Please upload photos.')
+            if len(photos) != 4:
+                raise forms.ValidationError(f'You must upload exactly 4 photos. You uploaded {len(photos)}.')
+            for photo in photos:
+                if not photo.content_type.startswith('image/'):
+                    raise forms.ValidationError('File must be an image.')
+                if photo.size > 5 * 1024 * 1024:
+                    raise forms.ValidationError('Image file too large ( > 5MB )')
+            return photos
+        else:
+            return None
         
-        for photo in photos:
-            if not photo.content_type.startswith('image/'):
-                raise forms.ValidationError('File must be an image.')
-            if photo.size > 5 * 1024 * 1024:  # 5MB limit
-                raise forms.ValidationError('Image file too large ( > 5MB )')
-        return photos
+        #     """Form for creating new property listings."""
+#     photos = MultipleFileField(
+#         label='Upload Property Photos',
+#         help_text='Please upload exactly 4 images.',
+#         required=True
+#     )
+
+#     class Meta:
+#         model = Listing
+#         fields = [
+#             'address', 'price', 'property_type', 'neighborhood',
+#             'bedrooms', 'bathrooms', 'square_footage', 'status', 'description'
+#         ]
+#         widgets = {
+#             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter address information'}),
+#             'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter price'}),
+#             'property_type': forms.Select(attrs={'class': 'form-control'}),
+#             'neighborhood': forms.Select(attrs={'class': 'form-control'}),
+#             'bedrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bedrooms'}),
+#             'bathrooms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of bathrooms'}),
+#             'square_footage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter square footage'}),
+#             'status': forms.Select(attrs={'class': 'form-control'}),
+#             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Describe the property, features, and nearby attractions...'}),
+#         }
+#         labels = {
+#             'property_type': 'Home Type',
+#             'square_footage': "Home's Square Footage",
+#             'status': 'Listing Status',
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Add empty_label for ForeignKey select fields with meaningful messages
+#         self.fields['property_type'].empty_label = 'Select a home type'
+#         self.fields['neighborhood'].empty_label = 'Select a neighborhood'
+        
+#         # For CharField with choices (status), add an empty choice at the beginning
+#         self.fields['status'].choices = [('', 'Select listing status')] + list(self.fields['status'].choices)
+
+#     def clean_photos(self):
+#         """Validate that exactly 4 photos are uploaded."""
+#         photos = self.cleaned_data.get('photos')
+        
+#         if not photos:
+#             raise forms.ValidationError('Please upload photos.')
+            
+#         if len(photos) != 4:
+#             raise forms.ValidationError(f'You must upload exactly 4 photos. You uploaded {len(photos)}.')
+        
+#         for photo in photos:
+#             if not photo.content_type.startswith('image/'):
+#                 raise forms.ValidationError('File must be an image.')
+#             if photo.size > 5 * 1024 * 1024:  # 5MB limit
+#                 raise forms.ValidationError('Image file too large ( > 5MB )')
+#         return photos
 
 
 class OmahaLocationForm(forms.ModelForm):
@@ -165,3 +210,31 @@ class OmahaLocationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['category'].empty_label = 'Select a Category'
+
+
+class ContactForm(forms.Form):
+    name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Your name',
+            'autocomplete': 'name'
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Your email',
+            'autocomplete': 'email'
+        })
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Your message...',
+            'rows': 5
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.label = False 
+            field.widget.attrs.update({'style': ''})
