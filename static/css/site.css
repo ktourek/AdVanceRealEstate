@@ -468,3 +468,46 @@ body {
         font-size: 28px;
     }
 }
+
+
+/* About Page Contact Styling */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+.text-danger {
+    color: #e74c3c;
+    font-size: 0.9rem;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c8e6c9;
+    }
+
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
