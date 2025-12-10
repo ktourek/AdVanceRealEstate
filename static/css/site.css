@@ -40,52 +40,101 @@ header {
 }
 
 .logo-container {
-    text-align: center;
+    display: flex;
+    align-items: center;
 }
 
 .site-logo {
-    max-height: 80px; 
+    max-height: 100px; 
     width: auto;
     display: block;
 }
 
 .header-nav-row {
-    padding: 10px 40px; 
+    padding: 10px 40px;
+    background: rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.nav-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.05); 
+}
+
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
 }
 
 header nav {
+    flex: 1;
     display: flex;
+    justify-content: center;
     gap: 40px;
-    margin: 0 auto; 
+    margin: 0;
 }
 
-    header nav a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 16px; 
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 4px;
+}
 
-        header nav a:hover {
-            text-decoration: underline;
-        }
+header nav a:hover {
+    text-decoration: underline;
+}
+
+header nav a.active {
+    font-weight: 700;
+    border-bottom: 2px solid #fff;
+}
 
 .user-actions {
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
-    .user-actions a {
-        color: #fff;
-        font-size: 20px; 
+.user-actions a {
+    color: #fff;
+    font-size: 20px;
+}
+
+@media (max-width: 768px) {
+    .header-nav-row {
+        padding: 10px 16px;
     }
+
+    .nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    header nav {
+        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin: 10px 0 0 0;
+    }
+
+    header nav.nav-open {
+        display: flex;
+    }
+}
 
 /* Main Content */
 main {
