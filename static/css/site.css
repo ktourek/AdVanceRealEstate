@@ -98,7 +98,345 @@ main {
     padding: 0 20px;
 }
 
-/* Featured Home Section */
+/* Home Layout - Left-Right Split */
+.home-layout {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+}
+
+/* Left Column: Welcome */
+.welcome-column {
+    flex: 0 0 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: #ffffff;
+    padding: 40px;
+}
+
+/* Right Column: Featured Property */
+.featured-column {
+    flex: 0 0 55%;
+    display: flex;
+    flex-direction: column;
+    background: #f9f9f9;
+    padding: 30px;
+    position: relative;
+}
+
+.featured-image-container {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.featured-image-container img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.featured-details-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.featured-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+}
+
+.featured-address-large {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+}
+
+.featured-desc-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    color: #374151;
+}
+
+.featured-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.view-listing-btn {
+    display: inline-block;
+    background: #869a77;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.view-listing-btn:hover {
+    background: #6d7d5f;
+    text-decoration: none;
+}
+
+.update-featured-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #4a5568;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.update-featured-btn:hover {
+    background: #2d3748;
+    text-decoration: none;
+}
+
+.update-featured-btn i {
+    color: #fbbf24;
+    font-size: 1rem;
+}
+
+.welcome-main-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    color: #111827;
+}
+
+.welcome-sub-title {
+    font-size: 1.4rem;
+    margin: 0 0 2rem 0;
+    font-style: italic;
+    color: #374151;
+}
+
+.welcome-paragraph {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    color: #374151;
+}
+
+.welcome-logo-bottom {
+    max-width: 200px;
+}
+
+.welcome-logo-bottom img {
+    width: 100%;
+    height: auto;
+    opacity: 0.9;
+}
+
+/* Listings Grid Layout */
+.listings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns by default */
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+/* Listing Card */
+.listing-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Listing Image Container - Fixed Height */
+.listing-image-container {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    background: #f3f4f6;
+    flex-shrink: 0;
+}
+
+.listing-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Listing Content */
+.listing-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.listing-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.listing-address {
+    font-size: 16px;
+    color: #374151;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.listing-type-neighborhood {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.listing-separator {
+    margin: 0 8px;
+    color: #d1d5db;
+}
+
+/* Status Indicators */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot-green {
+    background-color: #10b981;
+}
+
+.status-dot-yellow {
+    background-color: #f59e0b;
+}
+
+.status-dot-red {
+    background-color: #ef4444;
+}
+
+.status-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* No Listings Message */
+.no-listings {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-size: 18px;
+}
+
+/* Listings Page Header */
+.listings-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+    margin-top: 20px;
+}
+
+.add-listing-btn {
+    background: #869a77;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.add-listing-btn:hover {
+    background: #6d7d5f;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Sort and Filter Section */
+.sort-filter-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+}
+
+.sort-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-dropdowns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-dropdown {
+    padding: 12px 18px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    font-family: "Lato", sans-serif;
+    color: #111827;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 150px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.filter-dropdown:hover {
+    border-color: #869a77;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.filter-dropdown:focus {
+    outline: none;
+    border-color: #869a77;
+    box-shadow: 0 0 0 3px rgba(134, 154, 119, 0.1);
+}
+
 .featured-section {
     background: #ffffff;
     padding: 30px 0; 
@@ -411,4 +749,29 @@ footer {
         width: 220px;
         height: 320px;
     }
+}
+
+/* Featured Home Details */
+.featured-price-large {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #5a6e4d;
+    margin: 0 0 0.5rem;
+}
+
+.featured-details-row {
+    display: flex;
+    gap: 0.8rem;
+    font-size: 1.05rem;
+    color: #444;
+    margin-bottom: 0.4rem;
+}
+
+.featured-sub-details {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }

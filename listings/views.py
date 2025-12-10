@@ -71,8 +71,13 @@ def update_featured_listing(request):
         return redirect("home")
 
     listings = Listing.objects.order_by('-listed_date')[:200]
+    is_sold = False
+    if current_featured and str(current_featured.status) == 'Sold':
+        is_sold = True
+
     context = {
         "current_featured": current_featured,
+        "is_sold": is_sold,
         "listings": listings,
     }
     return render(request, "listings/update_featured_listing.html", context)
@@ -90,7 +95,7 @@ def all_listings(request):
         if not is_ajax and 'HTTP_X_REQUESTED_WITH' in request.META:
             is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
-    listings = Listing.objects.filter(is_visible=True).prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
+    listings = Listing.objects.prefetch_related('photos').select_related('status_id', 'neighborhood', 'property_type')
 
     neighborhood_id = request.GET.get('neighborhood', '').strip()
     property_type_id = request.GET.get('type', '').strip()
@@ -148,11 +153,16 @@ def all_listings(request):
         listings = listings.order_by('-listed_date')
 
     # visibility filter for authenticated users (optional)
-    if request.user.is_authenticated and visibility:
-        if visibility == 'visible':
-            listings = listings.filter(is_visible=True)
-        elif visibility == 'hidden':
+    # visibility filter
+    if request.user.is_authenticated:
+        if visibility == 'hidden':
             listings = listings.filter(is_visible=False)
+        elif visibility == 'all':
+            pass
+        else:
+            listings = listings.filter(is_visible=True)
+    else:
+        listings = listings.filter(is_visible=True)
 
     if should_log_search:
         SearchLog.objects.create(

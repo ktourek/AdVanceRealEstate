@@ -1,71 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 <div class="home-layout">
-    <!-- Top Row: Featured Home -->
-    <section class="featured-row">
-        {% if user.is_authenticated %}
-        <div class="featured-menu-wrapper">
-            {# CASE 1: Featured listing is SOLD → red ! link, direct redirect #}
-            {% if is_featured_sold %}
-                <a href="{% url 'featured_listing_update' %}"
-                   class="featured-alert-button"
-                   title="Your featured property is marked as Sold. Select a new featured listing.">
-                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
-                    <span class="sr-only">Featured property is sold – update featured listing</span>
-                </a>
-
-            {# CASE 2: Normal → three-dot menu with dropdown #}
-            {% else %}
-                <div class="featured-menu">
-                    <button class="featured-menu-button"
-                            type="button"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                            title="More actions">
-                        <i class="bi bi-three-dots" aria-hidden="true"></i>
-                        <span class="sr-only">More actions</span>
-                    </button>
-
-                    <div class="featured-menu-dropdown">
-                        <a href="{% url 'featured_listing_update' %}" class="featured-menu-item">
-                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                            <span>Update</span>
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        <div class="featured-image-container">
-            {% if featured_listing and featured_listing.photos.first %}
-                <img src="https://placehold.co/800x600?text=Featured+Home" alt="{{ featured_listing.address }}">
-            {% else %}
-                <img src="https://placehold.co/800x600?text=Featured+Home" alt="Featured Home">
-            {% endif %}
-        </div>
-
-        <div class="featured-text-container">
-            <h2 class="featured-title">Featured Home of the Week!</h2>
-            {% if featured_listing %}
-                <h3 class="featured-address-large">{{ featured_listing.address }}</h3>
-                <p class="featured-desc-text">
-                    {{ featured_listing.description|truncatechars:250 }}
-                </p>
-                <a href="#" class="view-listing-btn">View full listing</a>
-            {% else %}
-                <h3 class="featured-address-large">No featured listing selected</h3>
-                <p class="featured-desc-text">
-                    Check back soon for our home of the week!
-                </p>
-            {% endif %}
-        </div>
-    </section>
-
-    <!-- Bottom Row: Welcome -->
-    <section class="welcome-row">
+    <!-- Left Column: Welcome -->
+    <section class="welcome-column">
         <h1 class="welcome-main-title">Welcome to AdVance Home Real Estate!</h1>
         <h2 class="welcome-sub-title">Local expertise you can trust.</h2>
 
@@ -77,91 +17,57 @@
             <img src="{% static 'images/logo.png' %}" alt="AdVance Real Estate">
         </div>
     </section>
-</div>
 
-<style>
-.featured-menu-wrapper {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    z-index: 10;
-}
+    <!-- Right Column: Featured Property -->
+    <section class="featured-column">
+        <div class="featured-image-container">
+            {% if featured_listing and featured_listing.photos.first %}
+                {% if featured_listing.photos.first.image_data %}
+                    <img src="{% url 'listing_photo' featured_listing.photos.first.photo_id %}" alt="{{ featured_listing.address }}">
+                {% else %}
+                    <img src="https://placehold.co/800x600?text=Featured+Home" alt="{{ featured_listing.address }}">
+                {% endif %}
+            {% else %}
+                <img src="https://placehold.co/800x600?text=Featured+Home" alt="Featured Home">
+            {% endif %}
+        </div>
 
-.featured-menu {
-    position: relative;
-    display: inline-block;
-}
-
-/* red ! link when sold */
-.featured-alert-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    color: #d93025; /* red */
-    text-decoration: none;
-    padding: 0.25rem 0.4rem;
-    cursor: pointer;
-}
-
-/* three-dot menu button when not sold */
-.featured-menu-button {
-    border: none;
-    background: transparent;
-    padding: 0.25rem 0.6rem;
-    cursor: pointer;
-}
-
-.featured-menu-button .bi-three-dots {
-    font-size: 1.1rem;
-    line-height: 1;
-}
-
-/* dropdown */
-.featured-menu-dropdown {
-    position: absolute;
-    right: 0;
-    margin-top: 0.4rem;
-    background: #ffffff;
-    border-radius: 999px;
-    padding: 0.35rem 0.75rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    display: none;
-}
-
-.featured-menu-dropdown.is-open {
-    display: block;
-}
-
-/* dropdown item + icon */
-.featured-menu-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.featured-menu-item .bi {
-    font-size: 1rem;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const button = document.querySelector('.featured-menu-button');
-    const dropdown = document.querySelector('.featured-menu-dropdown');
-
-    if (!button || !dropdown) return;  // sold case → no menu, nothing to wire up
-
-    button.addEventListener('click', function (event) {
-        event.stopPropagation();
-        dropdown.classList.toggle('is-open');
-    });
-
-    document.addEventListener('click', function () {
-        dropdown.classList.remove('is-open');
-    });
-});
-</script>
+        <div class="featured-details-container">
+            <h2 class="featured-title">Featured Home of the Week!</h2>
+            {% if featured_listing %}
+                <h3 class="featured-address-large">{{ featured_listing.address }}</h3>
+                <p class="featured-price-large">${{ featured_listing.price|intcomma }}</p>
+                <div class="featured-details-row">
+                    <span>{{ featured_listing.bedrooms }} Bed</span> &bull;
+                    <span>{{ featured_listing.bathrooms }} Bath</span> &bull;
+                    <span>{{ featured_listing.square_footage|intcomma }} SqFt</span>
+                </div>
+                <p class="featured-sub-details">{{ featured_listing.property_type.name }} &bull; {{ featured_listing.neighborhood.name }}</p>
+                
+                <p class="featured-desc-text">
+                    {{ featured_listing.description|truncatechars:150 }}
+                </p>
+                
+                <div class="featured-buttons">
+                    <a href="{% url 'listings' %}" class="view-listing-btn">View full listings</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'featured_listing_update' %}" class="update-featured-btn">
+                            {% if is_featured_sold %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% endif %}
+                            Update Featured
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <h3 class="featured-address-large">No featured listing selected</h3>
+                <p class="featured-desc-text">
+                    Check back soon for our home of the week!
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'featured_listing_update' %}" class="view-listing-btn">Select Featured Property</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}

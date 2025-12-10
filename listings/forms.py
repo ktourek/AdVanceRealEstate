@@ -104,6 +104,13 @@ class ListingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['status_id'].empty_label = None
         self.fields['status_id'].required = True
+        
+        # Add 'form-control' class to all form fields for consistent styling
+        for field_name, field in self.fields.items():
+            if field_name != 'photos':  # Skip photos field as it's handled separately
+                existing_classes = field.widget.attrs.get('class', '')
+                if 'form-control' not in existing_classes:
+                    field.widget.attrs['class'] = (existing_classes + ' form-control').strip()
 
     def save_photos(self, listing):
             photos = self.cleaned_data.get('photos')
