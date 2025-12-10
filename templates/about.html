@@ -33,12 +33,6 @@
                 <form method="post" class="contact-form-modern">
                     {% csrf_token %}
 
-                    {% if messages %}
-                    {% for message in messages %}
-                    <div class="form-message {{ message.tags }}">{{ message }}</div>
-                    {% endfor %}
-                    {% endif %}
-
                     <div class="form-group">
                         {{ form.name }}
                         {% if form.name.errors %}<small class="error">{{ form.name.errors|join:", " }}</small>{% endif %}
