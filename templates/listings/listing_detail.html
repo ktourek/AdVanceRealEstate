@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="listing-page">
+  <div class="listing-detail-layout">
+      <div class="listing-left-column">
+          <div class="listing-gallery-card">
+              {% if primary_photo %}
+                  <div class="listing-main-image">
+                      <img id="listing-main-photo"
+                           src="{% url 'listing_photo' primary_photo.photo_id %}"
+                           alt="{{ listing.address }} main photo">
+                  </div>
+              {% else %}
+                  <div class="listing-gallery-placeholder">
+                      <p>No photos available.</p>
+                  </div>
+              {% endif %}
+
+              {% if gallery_photos %}
+              <div class="listing-thumbnail-grid">
+                  {% for photo in gallery_photos %}
+                      <button type="button"
+                              class="listing-thumbnail-button {% if forloop.first %}is-active{% endif %}"
+                              data-full-url="{% url 'listing_photo' photo.photo_id %}"
+                              data-alt="{{ listing.address }} photo {{ forloop.counter }}">
+                          <img src="{% url 'listing_photo_thumbnail' photo.photo_id %}"
+                               alt="{{ listing.address }} thumbnail {{ forloop.counter }}"
+                               loading="lazy">
+                      </button>
+                  {% endfor %}
+              </div>
+              {% endif %}
+          </div>
+
+          <div class="property-details-card">
+              <div class="property-summary">
+                  <div>
+                      <h1 class="property-address">{{ listing.address }}</h1>
+                      <p class="property-location">
+                          {{ listing.city }}{% if listing.city and listing.state %}, {% endif %}{{ listing.state }} {{ listing.zip_code }}
+                      </p>
+                  </div>
+                  <div class="property-price-status">
+                      <p class="property-price">${{ listing.price|floatformat:0|intcomma }}</p>
+                      {% with status_text=listing.status_display %}
+                      {% if status_text %}
+                      <div class="status-badge status-{{ status_text|lower }}">
+                          <span class="status-dot"></span>
+                          <span class="status-label">{{ status_text }}</span>
+                      </div>
+                      {% endif %}
+                      {% endwith %}
+                  </div>
+              </div>
+
+              <p class="property-description">{{ listing.description }}</p>
+
+              <dl class="property-attributes">
+                  <div>
+                      <dt>Neighborhood</dt>
+                      <dd>{{ listing.neighborhood|default:"—" }}</dd>
+                  </div>
+                  <div>
+                      <dt>House Type</dt>
+                      <dd>{{ listing.property_type|default:"—" }}</dd>
+                  </div>
+                  <div>
+                      <dt>Square Footage</dt>
+                      <dd>{{ listing.square_footage|default:"—" }}</dd>
+                  </div>
+                  <div>
+                      <dt>Bedrooms</dt>
+                      <dd>{{ listing.bedrooms|default:"—" }}</dd>
+                  </div>
+                  <div>
+                      <dt>Bathrooms</dt>
+                      <dd>{{ listing.bathrooms|default:"—" }}</dd>
+                  </div>
+              </dl>
+          </div>
+      </div>
+
+      <div class="listing-contact-column">
+          <div class="contact-card">
+            <h3>Contact Madison</h3>
+            <form method="post">
+                {% csrf_token %}
+            
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="form-message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="form-group">
+                    {{ form.name }}
+                </div>
+                <div class="form-group">
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    {{ form.message }}
+                </div>
+
+                <div class="contact-actions">
+                    <button type="submit" class="btn-send">Send</button>
+                </div>
+
+                {% if form.errors %}
+                  <pre style="color:red;">{{ form.errors }}</pre>
+                {% endif %}
+            </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const successBoxes = document.querySelectorAll('.form-message.success');
+      const mainImage = document.getElementById('listing-main-photo');
+      const thumbnailButtons = document.querySelectorAll('.listing-thumbnail-button');
+
+      if (successBoxes.length) {
+          setTimeout(function () {
+              successBoxes.forEach(function (box) {
+                  box.style.transition = 'opacity 0.6s ease';
+                  box.style.opacity = '0';
+                  setTimeout(function () {
+                      box.remove();
+                  }, 600);
+              });
+          }, 3000);
+      }
+
+      if (mainImage && thumbnailButtons.length) {
+          thumbnailButtons.forEach(function (button) {
+              button.addEventListener('click', function () {
+                  const fullUrl = button.getAttribute('data-full-url');
+                  const altText = button.getAttribute('data-alt');
+
+                  if (fullUrl) {
+                      mainImage.src = fullUrl;
+                      if (altText) {
+                          mainImage.alt = altText;
+                      }
+                  }
+
+                  thumbnailButtons.forEach(function (btn) {
+                      btn.classList.toggle('is-active', btn === button);
+                  });
+              });
+          });
+      }
+  });
+</script>
+
+{% endblock %}

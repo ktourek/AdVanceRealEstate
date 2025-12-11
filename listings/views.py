@@ -6,6 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from django.template.loader import render_to_string
+from django.views.generic import DetailView
+from django.views.generic.edit import FormMixin
 from decimal import Decimal
 import logging
 import re
@@ -292,18 +294,18 @@ def add_listing(request):
 @login_required
 def edit_listing_status(request, listing_id):
     listing = get_object_or_404(Listing, pk=listing_id)
-    
+
     if request.method == 'POST':
         form = ListingForm(
-            request.POST, 
-            request.FILES, 
+            request.POST,
+            request.FILES,
             instance=listing
         )
-        
+
         for field_name in list(form.fields.keys()):
             if field_name != 'status_id':
                 form.fields.pop(field_name, None)
-        
+
         if form.is_valid():
             form.save()
             messages.success(request, "Status updated successfully!")
@@ -313,7 +315,7 @@ def edit_listing_status(request, listing_id):
         for field_name in list(form.fields.keys()):
             if field_name != 'status_id':
                 form.fields.pop(field_name, None)
-    
+
     return render(request, 'listings/add_listing.html', {
         'form': form,
         'listing': listing,
@@ -682,9 +684,6 @@ def export_report_csv(request):
     for item in price_range_counts:
         writer.writerow([item['pricebucket__range'], item['search_count']])
 
-    return response
-
-
 def about(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
@@ -708,3 +707,94 @@ def about(request):
         form = ContactForm()
 
     return render(request, 'about.html', {'form': form})
+
+class ListingDetailView(FormMixin, DetailView):
+    """
+    Detail view for a single property that includes Madison's contact form.
+    Restricts public data to visible listings to protect hidden drafts.
+    """
+    model = Listing
+    form_class = ContactForm
+    template_name = "listings/listing_detail.html"
+    context_object_name = "listing"
+    pk_url_kwarg = "listing_id"
+
+    def get_queryset(self):
+        queryset = (
+            Listing.objects.prefetch_related('photos')
+                   .select_related('status_id', 'neighborhood', 'property_type')
+        )
+        if self.request.user.is_authenticated and self.request.user.is_staff:
+            return queryset
+        return queryset.filter(is_visible=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('form', self.get_form())
+        photos = list(self.object.photos.all())
+        context['photos'] = photos
+        gallery_photos = photos[:4] if photos else []
+        context['gallery_photos'] = gallery_photos
+        context['primary_photo'] = gallery_photos[0] if gallery_photos else None
+        context['thumbnail_photos'] = gallery_photos
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_valid(self, form):
+        listing = self.object
+        name = form.cleaned_data["name"]
+        email = form.cleaned_data["email"]
+        message_text = form.cleaned_data["message"]
+        property_url = self.request.build_absolute_uri(
+            reverse('listing_detail', kwargs={'listing_id': listing.pk})
+        )
+
+        subject = f"New inquiry about {listing.address}"
+        body = (
+            "A new message was submitted from the listing detail page.\n\n"
+            f"Listing: {listing.address}\n"
+            f"Neighborhood: {listing.neighborhood}\n"
+            f"Type: {listing.property_type}\n"
+            f"Price: ${listing.price}\n"
+            f"Status: {listing.status_display or 'Not specified'}\n"
+            f"Property link: {property_url}\n\n"
+            f"From: {name} <{email}>\n\n"
+            f"Message:\n{message_text}"
+        )
+
+        from_email = (
+            getattr(settings, "DEFAULT_FROM_EMAIL", None)
+            or getattr(settings, "EMAIL_HOST_USER", None)
+            or getattr(settings, "CONTACT_EMAIL", None)
+        )
+        recipient_email = getattr(settings, "CONTACT_EMAIL", None) or from_email
+
+        try:
+            send_mail(
+                subject,
+                body,
+                from_email,
+                [recipient_email],
+                fail_silently=False,
+            )
+        except Exception:
+            messages.error(
+                self.request,
+                "There was a problem sending your message. Please try again later."
+            )
+            return self.form_invalid(form)
+
+        messages.success(self.request, "Your message has been sent!")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_success_url(self):
+        return reverse('listing_detail', kwargs={'listing_id': self.object.pk})

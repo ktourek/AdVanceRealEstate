@@ -205,6 +205,22 @@ class Listing(models.Model):
         """Return is_visible as is_published for backward compatibility."""
         return self.is_visible
 
+    @property
+    def status_display(self):
+        """
+        Resolve the listing status from either the Status FK or
+        the legacy status CharField.
+        """
+        status_value = ''
+        if self.status_id and getattr(self.status_id, 'name', None):
+            status_value = self.status_id.name
+        elif self.status:
+            status_value = self.status
+
+        if status_value == 'Active':
+            return 'Available'
+        return status_value
+
 
 class Photo(models.Model):
     photo_id = models.AutoField(primary_key=True, db_column='Photo_ID')

@@ -166,7 +166,7 @@ class ListingForm(forms.ModelForm):
             return photos
         else:
             return None
-        
+
         #     """Form for creating new property listings."""
 #     photos = MultipleFileField(
 #         label='Upload Property Photos',
@@ -202,20 +202,20 @@ class ListingForm(forms.ModelForm):
 #         # Add empty_label for ForeignKey select fields with meaningful messages
 #         self.fields['property_type'].empty_label = 'Select a home type'
 #         self.fields['neighborhood'].empty_label = 'Select a neighborhood'
-        
+
 #         # For CharField with choices (status), add an empty choice at the beginning
 #         self.fields['status'].choices = [('', 'Select listing status')] + list(self.fields['status'].choices)
 
 #     def clean_photos(self):
 #         """Validate that exactly 4 photos are uploaded."""
 #         photos = self.cleaned_data.get('photos')
-        
+
 #         if not photos:
 #             raise forms.ValidationError('Please upload photos.')
-            
+
 #         if len(photos) != 4:
 #             raise forms.ValidationError(f'You must upload exactly 4 photos. You uploaded {len(photos)}.')
-        
+
 #         for photo in photos:
 #             if not photo.content_type.startswith('image/'):
 #                 raise forms.ValidationError('File must be an image.')
@@ -275,5 +275,7 @@ class ContactForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.label = False 
+            field.label = False
             field.widget.attrs.update({'style': ''})
+
+

@@ -5,111 +5,124 @@
 <div class="listings-grid">
     {% for item in listings %}
     <article class="listing-card">
-        {% with first_photo=item.photos.first %}
-        {% if first_photo %}
-        <div class="listing-image-container">
-            <img src="{% url 'listing_photo_thumbnail' first_photo.photo_id %}" alt="{{ item.address }}" class="listing-image">
-        </div>
-        {% else %}
-        <div class="listing-image-container">
-            <img src="https://placehold.co/400x300?text=No+Image" alt="{{ item.address }}" class="listing-image">
-        </div>
-        {% endif %}
-        {% endwith %}
-
-        <div class="listing-content">
-            <div class="listing-status-row">
-                <div class="listing-status">
-                    {% if item.status_id %}
-                    {% if item.status_id.name == 'Active' %}
-                    <span class="status-dot status-dot-green"></span>
-                    <span class="status-text">For Sale</span>
-                    {% elif item.status_id.name == 'Pending' %}
-                    <span class="status-dot status-dot-yellow"></span>
-                    <span class="status-text">Pending</span>
-                    {% elif item.status_id.name == 'Sold' %}
-                    <span class="status-dot status-dot-red"></span>
-                    <span class="status-text">Sold</span>
-                    {% endif %}
-                    {% elif item.status %}
-                    {# Fallback to status CharField if status_id is not set #}
-                    {% if item.status == 'Available' %}
-                    <span class="status-dot status-dot-green"></span>
-                    <span class="status-text">For Sale</span>
-                    {% elif item.status == 'Pending' %}
-                    <span class="status-dot status-dot-yellow"></span>
-                    <span class="status-text">Pending</span>
-                    {% elif item.status == 'Sold' %}
-                    <span class="status-dot status-dot-red"></span>
-                    <span class="status-text">Sold</span>
-                    {% endif %}
-                    {% endif %}
+        {# clickable area: image + content #}
+        <a href="{% url 'listing_detail' item.pk %}" class="listing-card-link">
+            {% with first_photo=item.photos.first %}
+                {% if first_photo %}
+                <div class="listing-image-container">
+                    <img src="{% url 'listing_photo_thumbnail' first_photo.photo_id %}"
+                         alt="{{ item.address }}" class="listing-image">
                 </div>
+                {% else %}
+                <div class="listing-image-container">
+                    <img src="https://placehold.co/400x300?text=No+Image"
+                         alt="{{ item.address }}" class="listing-image">
+                </div>
+                {% endif %}
+            {% endwith %}
 
-                {# three-dot menu #}
-                {% if user.is_authenticated %}
-                <div class="listing-actions">
-                    <button type="button" class="listing-actions-toggle" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                    <div class="listing-actions-menu">
-                        <a href="{% url 'edit_listing' item.pk %}" class="listing-actions-menu-item">
-                            <span class="listing-actions-icon"><i class="fas fa-pen"></i></span>
-                            <span class="listing-actions-label">Edit Listing</span>
-                        </a>
-                        {% if item.is_visible %}
-                        <button type="button"
-                                class="listing-actions-menu-item visibility-toggle-btn"
-                                data-toggle-url="{% url 'toggle_visibility' item.pk %}"
-                                data-visibility-action="hide">
-                            <span class="listing-actions-icon">
-                                <i class="fas fa-eye-slash"></i>
-                            </span>
-                            <span class="listing-actions-label">Hide Listing</span>
-                        </button>
-                        {% else %}
-                        <button type="button"
-                                class="listing-actions-menu-item visibility-toggle-btn"
-                                data-toggle-url="{% url 'toggle_visibility' item.pk %}"
-                                data-visibility-action="show">
-                            <span class="listing-actions-icon">
-                                <i class="fas fa-eye"></i>
-                            </span>
-                            <span class="listing-actions-label">Show Listing</span>
-                        </button>
+            <div class="listing-content">
+                <div class="listing-status-row">
+                    <div class="listing-status">
+                        {% if item.status_id %}
+                            {% if item.status_id.name == 'Active' %}
+                            <span class="status-dot status-dot-green"></span>
+                            <span class="status-text">For Sale</span>
+                            {% elif item.status_id.name == 'Pending' %}
+                            <span class="status-dot status-dot-yellow"></span>
+                            <span class="status-text">Pending</span>
+                            {% elif item.status_id.name == 'Sold' %}
+                            <span class="status-dot status-dot-red"></span>
+                            <span class="status-text">Sold</span>
+                            {% endif %}
+                        {% elif item.status %}
+                            {# Fallback to status CharField if status_id is not set #}
+                            {% if item.status == 'Available' %}
+                            <span class="status-dot status-dot-green"></span>
+                            <span class="status-text">For Sale</span>
+                            {% elif item.status == 'Pending' %}
+                            <span class="status-dot status-dot-yellow"></span>
+                            <span class="status-text">Pending</span>
+                            {% elif item.status == 'Sold' %}
+                            <span class="status-dot status-dot-red"></span>
+                            <span class="status-text">Sold</span>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
-                {% endif %}
-            </div>
 
-            <h2 class="listing-price">${{ item.price|floatformat:0|intcomma }}</h2>
-            <p class="listing-address">{{ item.address }}</p>
-            <div class="listing-type-neighborhood">
-                <span class="listing-type">{{ item.property_type.name }}</span>
-                <span class="listing-separator">|</span>
-                <span class="listing-neighborhood">{{ item.neighborhood.name }}</span>
-            </div>
-            <div class="listing-footer-row">
-                <div class="listing-details">
-                    {% if item.bedrooms %}{{ item.bedrooms }} Bed{% endif %}
-                    {% if item.bedrooms and item.bathrooms %} | {% endif %}
-                    {% if item.bathrooms %}{{ item.bathrooms }} Bath{% endif %}
-                    {% if item.square_footage %}
-                    {% if item.bedrooms or item.bathrooms %} | {% endif %}
-                    {{ item.square_footage|floatformat:0|intcomma }} Sqft
+                <h2 class="listing-price">
+                    ${{ item.price|floatformat:0|intcomma }}
+                </h2>
+                <p class="listing-address">{{ item.address }}</p>
+
+                <div class="listing-type-neighborhood">
+                    <span class="listing-type">{{ item.property_type.name }}</span>
+                    <span class="listing-separator">|</span>
+                    <span class="listing-neighborhood">{{ item.neighborhood.name }}</span>
+                </div>
+
+                <div class="listing-footer-row">
+                    <div class="listing-details">
+                        {% if item.bedrooms %}{{ item.bedrooms }} Bed{% endif %}
+                        {% if item.bedrooms and item.bathrooms %} | {% endif %}
+                        {% if item.bathrooms %}{{ item.bathrooms }} Bath{% endif %}
+                        {% if item.square_footage %}
+                            {% if item.bedrooms or item.bathrooms %} | {% endif %}
+                            {{ item.square_footage|floatformat:0|intcomma }} Sqft
+                        {% endif %}
+                    </div>
+
+                    {# hidden indicator for logged-in users #}
+                    {% if user.is_authenticated and not item.is_visible %}
+                    <div class="listing-hidden-indicator">
+                        <i class="fas fa-eye-slash"></i>
+                    </div>
                     {% endif %}
                 </div>
+            </div>
+        </a>
 
-                {# hidden indicator for logged-in users #}
-                {% if user.is_authenticated and not item.is_visible %}
-                <div class="listing-hidden-indicator">
-                    <i class="fas fa-eye-slash"></i>
-                </div>
+        {# three-dot admin actions (NOT inside the link) #}
+        {% if user.is_authenticated %}
+        <div class="listing-actions">
+            <button type="button" class="listing-actions-toggle"
+                    aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <div class="listing-actions-menu">
+                <a href="{% url 'edit_listing' item.pk %}"
+                   class="listing-actions-menu-item">
+                    <span class="listing-actions-icon">
+                        <i class="fas fa-pen"></i>
+                    </span>
+                    <span class="listing-actions-label">Edit Listing</span>
+                </a>
+
+                {% if item.is_visible %}
+                <button type="button"
+                        class="listing-actions-menu-item visibility-toggle-btn"
+                        data-toggle-url="{% url 'toggle_visibility' item.pk %}"
+                        data-visibility-action="hide">
+                    <span class="listing-actions-icon">
+                        <i class="fas fa-eye-slash"></i>
+                    </span>
+                    <span class="listing-actions-label">Hide Listing</span>
+                </button>
+                {% else %}
+                <button type="button"
+                        class="listing-actions-menu-item visibility-toggle-btn"
+                        data-toggle-url="{% url 'toggle_visibility' item.pk %}"
+                        data-visibility-action="show">
+                    <span class="listing-actions-icon">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                    <span class="listing-actions-label">Show Listing</span>
+                </button>
                 {% endif %}
             </div>
-
         </div>
+        {% endif %}
     </article>
     {% endfor %}
 </div>
@@ -118,7 +131,22 @@
     <p>No listings found.</p>
 </div>
 {% endif %}
+
 <style>
+    .listing-card {
+        position: relative;
+    }
+
+    .listing-card-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .listing-card-link:hover .listing-image {
+        transform: scale(1.01);
+    }
+
     .listing-status-row {
         display: flex;
         align-items: center;
@@ -134,31 +162,34 @@
     }
 
     .listing-actions {
-        position: relative;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 40; 
     }
 
     .listing-actions-toggle {
-        display: inline-flex; /* use flex to center icon */
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         width: 32px;
-        height: 24px; /* fixed height -> easy centering */
+        height: 24px;
         padding: 0;
         background: none;
         border: none;
         cursor: pointer;
         color: #111827;
         border-radius: 999px;
-        line-height: 1; /* no extra line box */
+        line-height: 1;
     }
 
-        .listing-actions-toggle i {
-            font-size: 16px; /* size of the three-dot icon */
-        }
+    .listing-actions-toggle i {
+        font-size: 16px;
+    }
 
-        .listing-actions-toggle:hover {
-            background-color: #f3f4f6;
-        }
+    .listing-actions-toggle:hover {
+        background-color: #f3f4f6;
+    }
 
     .listing-actions-menu {
         position: absolute;
@@ -166,12 +197,12 @@
         top: 120%;
         background: #ffffff;
         border-radius: 16px;
-        border: 1px solid #d1d5db; /* subtle border like the mockup */
+        border: 1px solid #d1d5db;
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        padding: 0; /* let items handle their own padding */
+        padding: 0;
         min-width: 180px;
         display: none;
-        z-index: 30;
+        z-index: 50;
     }
 
     .listing-actions.open .listing-actions-menu {
@@ -194,22 +225,19 @@
         white-space: nowrap;
     }
 
-        /* divider line between rows */
-        .listing-actions-menu-item + .listing-actions-menu-item {
-            border-top: 1px solid #e5e7eb;
-        }
+    .listing-actions-menu-item + .listing-actions-menu-item {
+        border-top: 1px solid #e5e7eb;
+    }
 
-    /* icon column */
     .listing-actions-icon {
         width: 18px;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 14px;
-        color: #4b5563; /* slightly muted */
+        color: #4b5563;
     }
 
-    /* label */
     .listing-actions-label {
         flex: 1;
     }
@@ -218,7 +246,6 @@
         background-color: #f3f4f6;
     }
 
-    /* Row that holds details (left) and hidden badge (right) */
     .listing-footer-row {
         display: flex;
         align-items: center;
@@ -232,18 +259,17 @@
         font-weight: 400;
     }
 
-    /* Hidden badge, bottom-right */
     .listing-hidden-indicator {
         display: flex;
         align-items: center;
         gap: 6px;
         font-size: 12px;
-        color: #9ca3af; /* subtle gray */
+        color: #9ca3af;
         white-space: nowrap;
     }
 
-        .listing-hidden-indicator i {
-            font-size: 12px;
-            color: #9ca3af;
-        }
+    .listing-hidden-indicator i {
+        font-size: 12px;
+        color: #9ca3af;
+    }
 </style>
