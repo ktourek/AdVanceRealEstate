@@ -27,24 +27,6 @@
                   {% if is_edit %}action="{% url 'edit_listing' listing.pk %}" {% endif %}
                   enctype="multipart/form-data">
                 {% csrf_token %}
-                {% if form.errors %}
-                <div style="background: #fee2e2; border: 1px solid #dc2626; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h3 style="color: #dc2626; margin-top: 0;">FORM ERRORS (why it won't save):</h3>
-                    <pre style="background: white; padding: 15px; border-radius: 4px; margin: 10px 0;">
-                        {{ form.errors }}
-                    </pre>
-                    <p><strong>POST data received:</strong> {{ request.POST }}</p>
-                </div>
-                {% endif %}
-
-                {% for field in form %}
-                {% if field.errors %}
-                <div style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 4px; margin: 10px 0;">
-                    {{ field.label }}: {{ field.errors }}
-                </div>
-                {% endif %}
-                {% endfor %}
-
                 {% if not is_edit %}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                     <div>{% include "listings/field.html" with field=form.address %}</div>

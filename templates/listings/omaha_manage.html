@@ -19,7 +19,7 @@
                         <span class="checkbox">{% if not current_category %}<i class="fas fa-check"></i>{% endif %}</span> All
                     </a>
                     {% for category in categories %}
-                    <a href="{% url 'manage_omaha' %}?category={{ category }}" class="dropdown-item {% if current_category == category %}active{% endif %}">
+                    <a href="{% url 'manage_omaha' %}?category={{ category|urlencode }}" class="dropdown-item {% if current_category == category %}active{% endif %}">
                         <span class="checkbox">{% if current_category == category %}<i class="fas fa-check"></i>{% endif %}</span> {{ category }}
                     </a>
                     {% endfor %}

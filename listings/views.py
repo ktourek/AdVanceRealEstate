@@ -684,6 +684,8 @@ def export_report_csv(request):
     for item in price_range_counts:
         writer.writerow([item['pricebucket__range'], item['search_count']])
 
+    return response
+
 def about(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)

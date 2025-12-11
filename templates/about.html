@@ -30,6 +30,13 @@
                 <h2 class="contact-heading">Let's chat!</h2>
                 <p class="contact-sub">Have any questions or want more information?<br>Send me a message below, I'm happy to talk!</p>
 
+                <div class="contact-details">
+                    <p><strong>Office:</strong><br> 1234 Douglas Street, Suite 500<br> Omaha, NE 68102</p>
+                    <p><strong>Phone:</strong> <a href="tel:14021231234">(402) 123-1234</a></p>
+                    <p><strong>Email:</strong> <a href="mailto:info@advancehome.com">info@advancehome.com</a></p>
+                    <p><strong>Website:</strong> <a href="https://www.advancehome.com" target="_blank" rel="noopener noreferrer">www.advancehome.com</a></p>
+                </div>
+
                 <form method="post" class="contact-form-modern">
                     {% csrf_token %}
 
@@ -77,4 +84,30 @@
       }
   });
 </script>
+
+<style>
+.contact-details {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.contact-details p {
+    margin: 0 0 10px 0;
+    line-height: 1.5;
+}
+
+.contact-details a {
+    color: #1f2937;
+    text-decoration: none;
+}
+
+.contact-details a:hover {
+    text-decoration: underline;
+}
+</style>
 {% endblock %}
