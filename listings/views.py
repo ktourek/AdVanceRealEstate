@@ -23,7 +23,7 @@ from .models import (
     Listing, Photo, Neighborhood, PropertyType,
     Status, Pricebucket, SearchLog, OmahaLocation
 )
-from .forms import ListingForm, OmahaLocationForm
+from .forms import ListingForm, OmahaLocationForm, ListingStatusPriceForm
 
 logger = logging.getLogger(__name__)
 
@@ -292,29 +292,26 @@ def add_listing(request):
 
 
 @login_required
-def edit_listing_status(request, listing_id):
+def edit_listing(request, listing_id):
+    """
+    Secure management dashboard view:
+    Madison can update only the price and listing status.
+    All other fields are read-only in the template.
+    """
     listing = get_object_or_404(Listing, pk=listing_id)
 
     if request.method == 'POST':
-        form = ListingForm(
+        form = ListingStatusPriceForm(
             request.POST,
-            request.FILES,
             instance=listing
         )
 
-        for field_name in list(form.fields.keys()):
-            if field_name != 'status_id':
-                form.fields.pop(field_name, None)
-
         if form.is_valid():
             form.save()
-            messages.success(request, "Status updated successfully!")
-            return redirect('listings')
+            messages.success(request, "Listing updated successfully!")
+            return redirect('listing_detail', listing_id=listing.pk)
     else:
-        form = ListingForm(instance=listing)
-        for field_name in list(form.fields.keys()):
-            if field_name != 'status_id':
-                form.fields.pop(field_name, None)
+        form = ListingStatusPriceForm(instance=listing)
 
     return render(request, 'listings/add_listing.html', {
         'form': form,

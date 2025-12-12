@@ -7,7 +7,7 @@
         {% if is_edit %}
         <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 10px;">Edit Property Listing</h1>
         <p style="color: #666; max-width: 700px; margin: 0 auto; line-height: 1.6;">
-            As Madison, you can update the <strong>listing status</strong> only.
+            As Madison, you can update the <strong>price</strong> and the <strong>listing status</strong> only.
         </p>
         {% else %}
         <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 10px;">Add New Property Listing</h1>
@@ -47,31 +47,57 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Address</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.address }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.address }}
+                        </div>
                     </div>
+
                     <div>
-                        <label style="font-weight:600; margin-bottom:8px; display:block;">Price</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">${{ listing.price|floatformat:0|intcomma }}</div>
+                        <label style="font-weight:600; margin-bottom:8px; display:block;">
+                            Price <span style="color:#dc2626;">*</span>
+                        </label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                        <div style="color:#dc2626; font-size:14px; margin-top:6px;">
+                            {% for error in form.price.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <p style="margin-top:4px; font-size:13px; color:#6b7280;">
+                            Enter a numeric price, e.g. <strong>275000</strong>.
+                        </p>
                     </div>
+
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Home Type</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.property_type.name }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.property_type.name }}
+                        </div>
                     </div>
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Neighborhood</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.neighborhood.name }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.neighborhood.name }}
+                        </div>
                     </div>
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Bedrooms</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.bedrooms }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.bedrooms }}
+                        </div>
                     </div>
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Bathrooms</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.bathrooms }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.bathrooms }}
+                        </div>
                     </div>
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">Square Footage</label>
-                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">{{ listing.square_footage|floatformat:0|intcomma }}</div>
+                        <div style="padding:14px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
+                            {{ listing.square_footage|floatformat:0|intcomma }}
+                        </div>
                     </div>
                     <div>
                         <label style="font-weight:600; margin-bottom:8px; display:block;">
@@ -84,17 +110,18 @@
                             {{ error }}<br>
                             {% endfor %}
                         </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 40px;">
-                    <label style="font-weight:600; margin-bottom:8px; display:block;">Description</label>
-                    <div style="padding:16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; line-height:1.6; min-height:80px;">
-                        {{ listing.description|default:"No description provided." }}
-                    </div>
-                </div>
                 {% endif %}
+            </div>
+        </div>
+
+<div style="margin-bottom: 40px;">
+    <label style="font-weight:600; margin-bottom:8px; display:block;">Description</label>
+    <div style="padding:16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; line-height:1.6; min-height:80px;">
+        {{ listing.description|default:"No description provided." }}
+    </div>
+</div>
+{% endif %}
+
 
                 <!-- Buttons -->
                 <div style="display: flex; justify-content: flex-end; gap: 16px; margin-top: 40px;">
@@ -104,7 +131,7 @@
                     </a>
                     <button type="submit"
                             style="padding: 14px 40px; background: #869a77; color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer;">
-                        {% if is_edit %}Update Status{% else %}Add Listing{% endif %}
+                        {% if is_edit %}Save Changes{% else %}Add Listing{% endif %}
                     </button>
                 </div>
             </form>

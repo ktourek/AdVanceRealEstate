@@ -223,6 +223,56 @@ class ListingForm(forms.ModelForm):
 #                 raise forms.ValidationError('Image file too large ( > 5MB )')
 #         return photos
 
+class ListingStatusPriceForm(forms.ModelForm):
+    """Form for secure management dashboard – Madison can only edit price and status."""
+    class Meta:
+        model = Listing
+        fields = ['price', 'status_id']
+        widgets = {
+            'status_id': forms.Select(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'status_id': 'Listing Status',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Match ListingForm behaviour
+        self.fields['status_id'].empty_label = None
+        self.fields['status_id'].required = True
+
+        # Add 'form-control' to both fields for consistent styling
+        for field_name, field in self.fields.items():
+            existing_classes = field.widget.attrs.get('class', '')
+            if 'form-control' not in existing_classes:
+                field.widget.attrs['class'] = (existing_classes + ' form-control').strip()
+
+    def clean_price(self):
+        """
+        Numeric validation for price (required, > 0, allow '200,000' or '$200000').
+        """
+        from decimal import Decimal, InvalidOperation
+
+        price = self.cleaned_data.get('price')
+
+        if price in (None, ''):
+            raise forms.ValidationError("Price is required.")
+
+        # If user typed a string like "$200,000"
+        if isinstance(price, str):
+            cleaned = price.replace(',', '').replace('$', '').strip()
+            try:
+                price_val = Decimal(cleaned)
+            except InvalidOperation:
+                raise forms.ValidationError("Enter a valid numeric price.")
+        else:
+            price_val = price
+
+        if price_val <= 0:
+            raise forms.ValidationError("Price must be greater than zero.")
+
+        return price_val
 
 class OmahaLocationForm(forms.ModelForm):
     """Form for adding and editing Omaha locations."""
