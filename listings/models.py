@@ -185,6 +185,17 @@ class Listing(models.Model):
         blank=True,
         db_column='Status'
     )
+    featured_title = models.CharField(
+        max_length=120,
+        blank=True,
+        null=True,
+        db_column='Featured_Title'
+    )
+    featured_highlight = models.TextField(
+        blank=True,
+        null=True,
+        db_column='Featured_Highlight'
+    )
     listed_date = models.DateTimeField(auto_now_add=True)
     
     class Meta:

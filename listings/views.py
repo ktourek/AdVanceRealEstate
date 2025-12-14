@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
+from django.db.models import Q
 from decimal import Decimal
 import logging
 import re
@@ -28,18 +29,30 @@ from .forms import ListingForm, OmahaLocationForm, ListingStatusPriceForm
 logger = logging.getLogger(__name__)
 
 
+def _listing_status_text(listing):
+    """Resolve a listing's status label from either field."""
+    if not listing:
+        return ''
+    if listing.status_id and getattr(listing.status_id, 'name', None):
+        return listing.status_id.name
+    return listing.status or ''
+
+
+def _is_listing_sold(listing):
+    """Helper to check if a listing is marked Sold (case insensitive)."""
+    return _listing_status_text(listing).strip().lower() == 'sold'
+
+
 def home(request):
     """Public homepage showing featured listing and welcome message."""
     featured_listing = Listing.objects.filter(is_visible=True, is_featured=True).first()
-
-    is_featured_sold = False
-    if request.user.is_authenticated and featured_listing:
-        status_str = str(getattr(featured_listing, 'status', '') or '')
-        is_featured_sold = status_str == 'Sold'
+    featured_status_text = _listing_status_text(featured_listing)
+    is_featured_sold = request.user.is_authenticated and _is_listing_sold(featured_listing)
 
     context = {
         'featured_listing': featured_listing,
         'is_featured_sold': is_featured_sold,
+        'featured_status_text': featured_status_text,
     }
     return render(request, 'listings/home.html', context)
 
@@ -55,6 +68,8 @@ def update_featured_listing(request):
 
     if request.method == "POST":
         listing_id = request.POST.get("listing_id")
+        feature_title = (request.POST.get("feature_title") or "").strip()
+        feature_description = (request.POST.get("feature_description") or "").strip()
         # Clear all featured flags
         Listing.objects.update(is_featured=False)
 
@@ -62,7 +77,11 @@ def update_featured_listing(request):
             try:
                 new_featured = Listing.objects.get(pk=int(listing_id))
                 new_featured.is_featured = True
-                new_featured.save(update_fields=["is_featured"])
+                new_featured.featured_title = feature_title
+                new_featured.featured_highlight = feature_description
+                new_featured.save(
+                    update_fields=["is_featured", "featured_title", "featured_highlight"]
+                )
             except (Listing.DoesNotExist, ValueError):
                 messages.error(request, "Selected listing not found.")
             else:
@@ -72,15 +91,24 @@ def update_featured_listing(request):
 
         return redirect("home")
 
-    listings = Listing.objects.order_by('-listed_date')[:200]
-    is_sold = False
-    if current_featured and str(current_featured.status) == 'Sold':
-        is_sold = True
+    eligible_listings = Listing.objects.select_related('status_id').filter(
+        is_visible=True
+    ).exclude(
+        Q(status__iexact='Sold') | Q(status_id__name__iexact='Sold')
+    ).order_by('-listed_date')[:200]
+
+    listings = list(eligible_listings)
+    if current_featured and all(l.listing_id != current_featured.listing_id for l in listings):
+        listings.insert(0, current_featured)
+
+    is_sold = _is_listing_sold(current_featured)
 
     context = {
         "current_featured": current_featured,
         "is_sold": is_sold,
         "listings": listings,
+        "feature_title_prefill": (current_featured.featured_title if current_featured else ""),
+        "feature_highlight_prefill": (current_featured.featured_highlight if current_featured else ""),
     }
     return render(request, "listings/update_featured_listing.html", context)
 

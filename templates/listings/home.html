@@ -33,8 +33,20 @@
         </div>
 
         <div class="featured-details-container">
-            <h2 class="featured-title">Featured Home of the Week!</h2>
+            <h2 class="featured-title">
+                {% if featured_listing and featured_listing.featured_title %}
+                    {{ featured_listing.featured_title }}
+                {% else %}
+                    Featured Home of the Week!
+                {% endif %}
+            </h2>
             {% if featured_listing %}
+                {% if user.is_authenticated and is_featured_sold %}
+                <div class="featured-sold-pill">
+                    <i class="bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
+                    <span>Featured home is sold — select a new listing.</span>
+                </div>
+                {% endif %}
                 <h3 class="featured-address-large">{{ featured_listing.address }}</h3>
                 <p class="featured-price-large">${{ featured_listing.price|intcomma }}</p>
                 <div class="featured-details-row">
@@ -44,12 +56,18 @@
                 </div>
                 <p class="featured-sub-details">{{ featured_listing.property_type.name }} &bull; {{ featured_listing.neighborhood.name }}</p>
                 
+                {% if featured_listing.featured_highlight %}
+                <p class="featured-desc-text">
+                    {{ featured_listing.featured_highlight }}
+                </p>
+                {% else %}
                 <p class="featured-desc-text">
                     {{ featured_listing.description|truncatechars:150 }}
                 </p>
+                {% endif %}
                 
                 <div class="featured-buttons">
-                    <a href="{% url 'listings' %}" class="view-listing-btn">View full listings</a>
+                    <a href="{% url 'listing_detail' featured_listing.pk %}" class="view-listing-btn">View full listing</a>
                     {% if user.is_authenticated %}
                         <a href="{% url 'featured_listing_update' %}" class="update-featured-btn">
                             {% if is_featured_sold %}

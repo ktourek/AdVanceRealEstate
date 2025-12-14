@@ -1,223 +1,353 @@
-{% extends "base.html" %} {% block content %}
-<div class="home-layout featured-update-page">
-  <section class="featured-update-row">
-    <h1 class="page-title">Update Featured Property</h1>
-    <p class="page-subtitle">
-      As Madison, you can select one of your active listings to be highlighted
-      on the homepage as the Featured Property. Once saved, the homepage updates
-      instantly.
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="featured-update-wrapper">
+  <div class="featured-update-header">
+    <h1>Update Featured Property</h1>
+    <p>
+      As Madison, you can select one of your active listings to be highlighted on the homepage.
+      Once saved, visitors will see the change immediately.
     </p>
+  </div>
 
-    <div class="featured-update-card">
-      <h2 class="section-title">Select a Featured Listing</h2>
-
-      {% if is_sold %}
-      <div
-        class="alert alert-warning"
-        style="
-          background-color: #fff3cd;
-          color: #856404;
-          padding: 1rem;
-          margin-bottom: 2rem;
-          border-radius: 8px;
-          border: 1px solid #ffeeba;
-        "
-      >
-        <i class="bi bi-exclamation-circle-fill"></i>
-        <strong>Action Needed:</strong> The current featured property is marked
-        as <strong>Sold</strong>. Please select a new active listing to
-        highlight.
+  <div class="featured-update-card">
+    <div class="featured-card-heading">
+      <div>
+        <h2>Select a Featured Listing</h2>
+        <p>Only listings that are visible and not sold appear in this list.</p>
+      </div>
+      {% if current_featured %}
+      <div class="current-featured-chip">
+        <span class="chip-label">Current</span>
+        <span class="chip-value">{{ current_featured.address }}</span>
       </div>
       {% endif %}
-
-      <form method="post" class="featured-update-form">
-        {% csrf_token %}
-
-        <!-- Choose a Property -->
-        <div class="form-field">
-          <label for="listing_id">Choose a Property</label>
-          <div class="select-wrapper">
-            <select name="listing_id" id="listing_id">
-              <option value="">None (No Featured Property)</option>
-              {% for listing in listings %}
-              <option value="{{ listing.listing_id }}" 
-                {% if current_featured and listing.listing_id == current_featured.listing_id %}selected{% endif %}>
-                {{ listing.address }} - ${{ listing.price }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
-
-      {% if current_featured %}
-      <p class="current-featured-info">
-        Currently featured: <strong>{{ current_featured.address }}</strong>
-      </p>
-      {% else %}
-      <p class="current-featured-info">No listing is currently featured.</p>
-      {% endif %}
     </div>
-  </section>
+
+    {% if is_sold %}
+    <div class="featured-alert">
+      <i class="bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
+      <div>
+        <strong>Your featured listing is sold.</strong>
+        <p class="alert-copy">Choose a new property so the homepage highlights an active listing.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="post" class="featured-update-form">
+      {% csrf_token %}
+
+      <div class="form-field">
+        <label for="listing_id">Choose a property</label>
+        <div class="fancy-select">
+          <select name="listing_id" id="listing_id">
+            <option value="">None (clear featured property)</option>
+            {% for listing in listings %}
+            <option value="{{ listing.listing_id }}"
+              data-feature-title="{{ listing.featured_title|default_if_none:'' }}"
+              data-feature-highlight="{{ listing.featured_highlight|default_if_none:'' }}"
+              {% if current_featured and listing.listing_id == current_featured.listing_id %}selected{% endif %}>
+              {{ listing.address }} — ${{ listing.price|floatformat:0|intcomma }}
+              {% if listing.status_display %}({{ listing.status_display }}){% endif %}
+            </option>
+            {% empty %}
+            <option value="" disabled>No eligible listings available</option>
+            {% endfor %}
+          </select>
+        </div>
+        <p class="field-hint">Hidden or sold listings are filtered out automatically.</p>
+      </div>
+
+      <div class="form-field">
+        <label for="feature_title">Feature Title</label>
+        <input
+          type="text"
+          id="feature_title"
+          name="feature_title"
+          class="text-input"
+          placeholder="e.g., Featured Home of the Week!"
+          maxlength="120"
+          value="{{ feature_title_prefill|default_if_none:'' }}"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="feature_description">Short Highlight Description</label>
+        <textarea
+          id="feature_description"
+          name="feature_description"
+          class="text-area"
+          rows="4"
+          placeholder="Add a short description that will accompany the featured listing...">{{ feature_highlight_prefill|default_if_none:'' }}</textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <style>
-  /* --- Page layout --- */
-  .featured-update-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2.5rem 2rem 4rem;
+  .featured-update-wrapper {
+    max-width: 900px;
+    margin: 40px auto 80px;
+    padding: 0 20px;
   }
 
-  .featured-update-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* --- Header --- */
-  .page-title {
-    font-size: 2rem;
-    font-weight: 600;
+  .featured-update-header {
     text-align: center;
-    margin-bottom: 0.3rem;
+    margin-bottom: 28px;
   }
 
-  .page-subtitle {
-    max-width: 700px;
-    margin: 0 auto 2.3rem;
-    text-align: center;
-    font-size: 0.98rem;
-    color: #666666;
+  .featured-update-header h1 {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #111827;
   }
 
-  /* --- Card --- */
+  .featured-update-header p {
+    margin: 12px auto 0;
+    max-width: 680px;
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
   .featured-update-card {
-    width: 100%;
-    max-width: 1000px;
-    background: #ffffff;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+    padding: 36px 40px;
+  }
+
+  .featured-card-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .featured-card-heading h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #111827;
+  }
+
+  .featured-card-heading p {
+    margin: 4px 0 0;
+    color: #6b7280;
+  }
+
+  .current-featured-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
+  .chip-label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: #475569;
+  }
+
+  .featured-alert {
+    display: flex;
+    gap: 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
     border-radius: 16px;
-    padding: 2.25rem 2.75rem 2.1rem;
-    border: 1px solid #e2e2e2;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    padding: 16px 18px;
+    margin-bottom: 24px;
   }
 
-  .section-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1.75rem;
+  .featured-alert i {
+    font-size: 1.4rem;
+    color: #dc2626;
   }
 
-  /* --- Form --- */
+  .alert-copy {
+    margin: 4px 0 0;
+    color: #7f1d1d;
+  }
+
   .featured-update-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    gap: 24px;
   }
 
   .form-field label {
-    font-size: 0.9rem;
     font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
   }
 
-  /* Select */
-  .select-wrapper select {
+  .text-input,
+  .text-area {
     width: 100%;
-    padding: 0.75rem 0.9rem;
-    border-radius: 10px;
-    border: 1px solid #d4d4d4;
-    font-size: 0.95rem;
-    font-family: inherit;
-    background-color: #fafafa;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    padding: 14px 18px;
+    font-size: 1rem;
+    font-family: "Lato", sans-serif;
+    background: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
 
-    appearance: none; /* remove native chevron */
-    -moz-appearance: none;
+  .text-area {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .text-input:focus,
+  .text-area:focus {
+    outline: none;
+    border-color: #8a9c78;
+    box-shadow: 0 0 0 3px rgba(138, 156, 120, 0.25);
+    background-color: #fff;
+  }
+
+  .fancy-select {
+    position: relative;
+  }
+
+  .fancy-select select {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    padding: 16px 20px;
+    font-size: 1rem;
+    background: #f8fafc;
+    appearance: none;
     -webkit-appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, #555 50%),
-      linear-gradient(135deg, #555 50%, transparent 50%);
-    background-position: calc(100% - 18px) calc(50% - 3px),
-      calc(100% - 12px) calc(50% - 3px);
-    background-size: 6px 6px;
+    -moz-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #4b5563 50%),
+      linear-gradient(135deg, #4b5563 50%, transparent 50%);
+    background-position: calc(100% - 26px) calc(50% - 4px),
+      calc(100% - 16px) calc(50% - 4px);
+    background-size: 10px 10px;
     background-repeat: no-repeat;
   }
 
-  /* Focus state */
-  .select-wrapper select:focus {
+  .fancy-select select:focus {
     outline: none;
-    border-color: #7a8f6b;
-    box-shadow: 0 0 0 3px rgba(122, 143, 107, 0.18);
-    background-color: #ffffff;
+    border-color: #8a9c78;
+    box-shadow: 0 0 0 3px rgba(138, 156, 120, 0.25);
+    background-color: #fff;
   }
 
-  /* Errors */
-  .form-error {
-    font-size: 0.82rem;
-    color: #b3261e;
+  .field-hint {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+    color: #6b7280;
   }
 
-  /* --- Buttons --- */
   .form-actions {
-    margin-top: 1.75rem;
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 12px;
   }
 
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 999px;
-    padding: 0.45rem 1.7rem;
-    font-size: 0.95rem;
+    padding: 12px 32px;
+    font-weight: 600;
     border: 1px solid transparent;
-    cursor: pointer;
     text-decoration: none;
-    font-weight: 500;
+    cursor: pointer;
   }
 
-  /* Green Save button */
   .btn-primary {
-    background-color: #8a9c78; /* tweak to match your header green */
+    background: #8a9c78;
     border-color: #8a9c78;
-    color: #ffffff;
-    box-shadow: 0 4px 8px rgba(138, 156, 120, 0.4);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(138, 156, 120, 0.4);
   }
 
   .btn-primary:hover {
-    background-color: #7a8c6a;
-    border-color: #7a8c6a;
+    background: #7a8c6a;
   }
 
-  /* White Cancel button */
   .btn-secondary {
-    background-color: #ffffff;
-    color: #333333;
-    border-color: #333333;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    background: #fff;
+    color: #1f2937;
+    border-color: #1f2937;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
   }
 
   .btn-secondary:hover {
-    background-color: #f5f5f5;
+    background: #f8fafc;
   }
 
-  /* --- Current featured text --- */
-  .current-featured-info {
-    margin-top: 1.4rem;
-    font-size: 0.9rem;
-    color: #666666;
+  @media (max-width: 640px) {
+    .featured-update-card {
+      padding: 28px 24px;
+    }
+    .featured-card-heading {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .form-actions {
+      flex-direction: column;
+    }
+    .form-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const selectEl = document.getElementById('listing_id');
+    const titleInput = document.getElementById('feature_title');
+    const descInput = document.getElementById('feature_description');
+
+    function applyOptionData(option) {
+      if (!option || !titleInput || !descInput) {
+        return;
+      }
+      const title = option.dataset.featureTitle;
+      const highlight = option.dataset.featureHighlight;
+      const isClearingSelection = !option.value;
+
+      if (!titleInput.matches(':focus')) {
+        if (title && title.length) {
+          titleInput.value = title;
+        } else if (isClearingSelection) {
+          titleInput.value = '';
+        }
+      }
+
+      if (!descInput.matches(':focus')) {
+        if (highlight && highlight.length) {
+          descInput.value = highlight;
+        } else if (isClearingSelection) {
+          descInput.value = '';
+        }
+      }
+    }
+
+    if (selectEl) {
+      applyOptionData(selectEl.options[selectEl.selectedIndex]);
+      selectEl.addEventListener('change', function () {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        applyOptionData(selectedOption);
+      });
+    }
+  });
+</script>
 {% endblock %}
